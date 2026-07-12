@@ -1,0 +1,39 @@
+# Local/dev only — spins up the ASR service next to its own RabbitMQ so you
+# can test the full async flow without the real .NET backend or a shared
+# cluster. In staging/production, point RABBITMQ_HOST at the shared broker
+# the backend also connects to.
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # management UI: http://localhost:15672 (guest/guest)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  asr-service:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      MODEL_DEVICE: auto
+      LOG_LEVEL: INFO
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - asr_uploads:/tmp/asr_uploads
+
+volumes:
+  asr_uploads:

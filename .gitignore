@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Environment
+.env
+
+# Model weights / caches (never commit — huge, and re-downloadable)
+Checkpoints/
+*.safetensors
+*.bin
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+asr-service/test_model.py

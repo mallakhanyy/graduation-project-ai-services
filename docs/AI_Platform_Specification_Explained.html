@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Platform Specification — Explained</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F4F3;
+    --paper-line: rgba(16,32,40,0.06);
+    --ink:#101E28;
+    --ink-soft:#3C4D57;
+    --navy:#173A4D;
+    --navy-deep:#0E2531;
+    --amber:#C9862E;
+    --amber-soft:#F4E4CB;
+    --teal:#2F7A72;
+    --teal-soft:#DCEEEA;
+    --card:#FFFFFF;
+    --line:#D8DEDB;
+    --radius:10px;
+    --maxw:920px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 42px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:var(--navy);}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  /* ---------- HERO / TITLE BLOCK ---------- */
+  header.hero{
+    background:var(--navy-deep);
+    color:#EFEFEA;
+    padding:64px 0 0 0;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size:38px 38px;
+    pointer-events:none;
+  }
+  .hero-inner{position:relative; z-index:1;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:18px;
+  }
+  h1.title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(34px, 5.2vw, 54px);
+    line-height:1.08;
+    margin:0 0 16px 0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    font-size:17px;
+    color:#C7D2D6;
+    max-width:640px;
+    margin:0 0 40px 0;
+  }
+
+  .titleblock{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:var(--radius) var(--radius) 0 0;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+  }
+  .titleblock .cell{
+    padding:16px 20px;
+    border-right:1px solid rgba(255,255,255,0.14);
+  }
+  .titleblock .cell:last-child{border-right:none;}
+  .titleblock .cell .k{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:#8FA3AB;
+    margin-bottom:6px;
+  }
+  .titleblock .cell .v{
+    font-size:14.5px;
+    color:#EFEFEA;
+    font-weight:500;
+  }
+
+  @media (max-width:640px){
+    .titleblock{grid-template-columns:repeat(2,1fr);}
+    .titleblock .cell:nth-child(2){border-right:none;}
+  }
+
+  /* ---------- LEGEND / HOW TO READ ---------- */
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin:40px 0 8px 0;
+  }
+  @media (max-width:640px){ .legend{grid-template-columns:1fr;} }
+  .legend .box{
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:14.5px;
+  }
+  .legend .plain{background:var(--amber-soft); border:1px solid #E7C892;}
+  .legend .tech{background:#EAF0EF; border:1px solid #C7D6D2;}
+  .legend .box .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .legend .plain .tag{color:#8A5A17;}
+  .legend .tech .tag{color:#1F4B4A;}
+
+  /* ---------- CONTENTS STRIP ---------- */
+  nav.toc{
+    margin:36px 0 8px 0;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px 6px 20px;
+  }
+  nav.toc h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    margin:0 0 14px 0;
+    font-weight:600;
+  }
+  .toc-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:4px 18px;
+    padding-bottom:14px;
+  }
+  @media (max-width:700px){ .toc-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:460px){ .toc-grid{grid-template-columns:1fr;} }
+  .toc-grid a{
+    display:block;
+    font-size:13.5px;
+    color:var(--ink);
+    text-decoration:none;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .toc-grid a:hover{color:var(--navy); }
+  .toc-grid a span.num{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--amber);
+    margin-right:8px;
+    font-size:12.5px;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  main{padding:8px 0 80px 0;}
+  section.spec{
+    margin-top:56px;
+    scroll-margin-top:24px;
+  }
+  section.spec .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:18px;
+    border-bottom:2px solid var(--navy);
+    padding-bottom:10px;
+  }
+  section.spec .sec-num{
+    font-family:'IBM Plex Mono', monospace;
+    color:#fff;
+    background:var(--navy);
+    font-size:13px;
+    font-weight:600;
+    padding:3px 9px;
+    border-radius:5px;
+  }
+  section.spec h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:25px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  section.spec h3.sub{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    margin:28px 0 10px 0;
+    color:var(--navy);
+  }
+
+  .panel{
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin-bottom:14px;
+    font-size:15px;
+  }
+  .panel.plain{background:var(--amber-soft); border:1px solid #E7C892;}
+  .panel.tech{background:#fff; border:1px solid var(--line);}
+  .panel .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .panel.plain .tag{color:#8A5A17;}
+  .panel.tech .tag{color:#1F4B4A;}
+  .panel p{margin:0 0 8px 0;}
+  .panel p:last-child{margin-bottom:0;}
+  .panel ul{margin:6px 0 0 0; padding-left:20px;}
+  .panel li{margin-bottom:4px;}
+
+  code, .mono{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92em;
+    background:#EEF1F0;
+    padding:1px 6px;
+    border-radius:4px;
+    color:#123;
+  }
+
+  /* generic mini table */
+  table.spec-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    font-size:14px;
+    margin:6px 0 18px 0;
+  }
+  table.spec-table th, table.spec-table td{
+    text-align:left;
+    padding:9px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  table.spec-table th{
+    background:#EAF0EF;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+  }
+  table.spec-table tr:last-child td{border-bottom:none;}
+
+  /* ---------- DIAGRAM BLOCKS (built from CSS, no images) ---------- */
+  .diagram{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 20px;
+    margin:6px 0 18px 0;
+  }
+  .flow{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
+  }
+  .flow .node{
+    background:#F5F7F6;
+    border:1.5px solid var(--navy);
+    border-radius:8px;
+    padding:10px 18px;
+    font-size:13.5px;
+    font-weight:600;
+    text-align:center;
+    color:var(--navy-deep);
+    min-width:150px;
+  }
+  .flow .node.accent{background:var(--teal-soft); border-color:var(--teal);}
+  .flow .node small{display:block; font-weight:400; font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .flow .arrow{font-size:18px; color:var(--navy); line-height:1; margin:4px 0;}
+  .branches{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin:4px 0;
+  }
+  .branches .col{display:flex; flex-direction:column; align-items:center; gap:0;}
+
+  .pair{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:600px){ .pair{grid-template-columns:1fr;} }
+  .pair .diagram h4{
+    margin:0 0 12px 0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .pair .wrong h4{color:#A14B2A;}
+  .pair .correct h4{color:#1F4B4A;}
+  .pair .wrong .node{border-color:#A14B2A; background:#FBEDE6;}
+  .pair .wrong .arrow{color:#A14B2A;}
+  .note-inline{font-size:11.5px; color:var(--ink-soft); font-style:italic; margin-top:4px;}
+
+  .folder{
+    background:#FAF9F5;
+    border:1px solid var(--line);
+    border-radius:0 8px 8px 8px;
+    position:relative;
+    padding:18px 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+  }
+  .folder::before{
+    content:"service_name/";
+    position:absolute;
+    top:-26px; left:0;
+    background:#EAE6DC;
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:5px 14px 8px 14px;
+    border-radius:6px 6px 0 0;
+    font-weight:600;
+  }
+  .folder ul{list-style:none; margin:14px 0 0 0; padding:0;}
+  .folder li{padding:4px 0; color:var(--ink);}
+  .folder li::before{content:"•  "; color:var(--amber);}
+
+  /* ---------- CALLOUT / SUMMARY BOX ---------- */
+  .callout{
+    background:var(--navy-deep);
+    color:#EAF0EE;
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin:56px 0;
+  }
+  .callout h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 10px 0;
+    font-size:19px;
+    color:#fff;
+  }
+  .callout p{margin:0; font-size:14.5px; color:#C7D2D6;}
+
+  footer{
+    text-align:center;
+    padding:40px 0 60px 0;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  footer .mono{background:none; padding:0;}
+
+  .top-link{
+    display:inline-block;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--ink-soft);
+    text-decoration:none;
+    font-family:'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Companion Guide · Plain English + Technical</div>
+    <h1 class="title">AI Platform Specification, Explained</h1>
+    <p class="subtitle">A walk-through of the graduation project's AI Platform Specification (v1.0) — written so that both a non-technical reviewer and a developer on the team can understand exactly what was decided, and why.</p>
+    <div class="titleblock">
+      <div class="cell"><div class="k">Source document</div><div class="v">AI Platform Specification v1.0</div></div>
+      <div class="cell"><div class="k">Project</div><div class="v">Graduation Project — AI Platform</div></div>
+      <div class="cell"><div class="k">Status</div><div class="v">Draft</div></div>
+      <div class="cell"><div class="k">Sections covered</div><div class="v">17</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="legend">
+    <div class="box plain">
+      <span class="tag">🟠 In Plain English</span>
+      What this actually means, in everyday language — for anyone reviewing the project, not just engineers.
+    </div>
+    <div class="box tech">
+      <span class="tag">🔧 Technical Detail</span>
+      The precise rule, contract, or convention as written in the spec — for the people building it.
+    </div>
+  </div>
+
+  <nav class="toc" id="top">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <a href="#s1"><span class="num">01</span>Purpose</a>
+      <a href="#s2"><span class="num">02</span>Overall Architecture</a>
+      <a href="#s3"><span class="num">03</span>Design Principles</a>
+      <a href="#s4"><span class="num">04</span>Standard Folder Structure</a>
+      <a href="#s5"><span class="num">05</span>API Standards</a>
+      <a href="#s6"><span class="num">06</span>Request Standards</a>
+      <a href="#s7"><span class="num">07</span>Response Standard</a>
+      <a href="#s8"><span class="num">08</span>Error Handling</a>
+      <a href="#s9"><span class="num">09</span>Logging Standard</a>
+      <a href="#s10"><span class="num">10</span>Configuration</a>
+      <a href="#s11"><span class="num">11</span>Model Layer</a>
+      <a href="#s12"><span class="num">12</span>Routing Layer</a>
+      <a href="#s13"><span class="num">13</span>Versioning</a>
+      <a href="#s14"><span class="num">14</span>Deployment</a>
+      <a href="#s15"><span class="num">15</span>Future Services</a>
+      <a href="#s16"><span class="num">16</span>Non-Goals</a>
+      <a href="#s17"><span class="num">17</span>Request Tracking</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- 1 -->
+    <section class="spec" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Purpose</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The AI Platform isn't one giant program — it's a set of small, separate AI "workers," each trained to do exactly one job (like turning speech into text, or recognizing objects in an image). They all report to a central backend, which is the only thing that talks to them directly.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>A collection of independent AI microservices, each exposing a machine learning model through a REST API. Each service handles a single AI capability (ASR, Computer Vision, Recommendation, and future services) and communicates only with the ASP.NET Core backend.</p>
+        <ul>
+          <li>Modular and maintainable</li>
+          <li>Scalable independently per service</li>
+          <li>Models can be swapped without touching the mobile app or backend logic</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="spec" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Overall Architecture</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Think of it like a company org chart: the mobile app never emails the AI specialists directly — it always goes through the office manager (the backend), who routes the request to the right specialist and brings the answer back.</p>
+      </div>
+      <div class="diagram">
+        <div class="flow">
+          <div class="node">React Native<small>mobile app</small></div>
+          <div class="arrow">↓</div>
+          <div class="node accent">ASP.NET Core API<small>the only thing allowed to call AI services</small></div>
+          <div class="arrow">↓</div>
+          <div class="branches">
+            <div class="col">
+              <div class="node">ASR Service</div>
+              <div class="arrow">↓</div>
+              <div class="node" style="background:#F5F7F6;">Hugging Face</div>
+            </div>
+            <div class="col">
+              <div class="node">Vision Service</div>
+              <div class="arrow">↓</div>
+              <div class="node" style="background:#F5F7F6;">YOLO / CNN / …</div>
+            </div>
+            <div class="col">
+              <div class="node">Recommendation Service</div>
+              <div class="arrow">↓</div>
+              <div class="node" style="background:#F5F7F6;">LLM / NLP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p><strong>Rule:</strong> the mobile application must never communicate directly with AI services. The ASP.NET Core backend is the sole caller of every AI service.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="spec" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Design Principles</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Five ground rules keep the system from turning into spaghetti as it grows. They boil down to: each worker does one job, workers never gossip directly with each other, nobody remembers past conversations, the backend doesn't need to know how the AI works internally, and any model can be swapped out later without breaking anything.</p>
+      </div>
+
+      <h3 class="sub">3.1 · Single Responsibility</h3>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Each service performs exactly one AI task.</p>
+      </div>
+      <div class="pair">
+        <div class="diagram correct">
+          <h4>✔ Correct</h4>
+          <div class="flow"><div class="node">Speech → Text</div></div>
+        </div>
+        <div class="diagram wrong">
+          <h4>✘ Not allowed</h4>
+          <div class="flow"><div class="node">Speech → Text → Recommendation</div></div>
+        </div>
+      </div>
+
+      <h3 class="sub">3.2 · Independence</h3>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>AI services must not call each other. The backend always orchestrates the workflow between them.</p>
+      </div>
+      <div class="pair">
+        <div class="diagram wrong">
+          <h4>✘ Wrong</h4>
+          <div class="flow">
+            <div class="node">ASR</div>
+            <div class="arrow">↓</div>
+            <div class="node">Recommendation</div>
+          </div>
+          <p class="note-inline">Services talking directly to each other</p>
+        </div>
+        <div class="diagram correct">
+          <h4>✔ Correct</h4>
+          <div class="flow">
+            <div class="node">Backend</div>
+            <div class="arrow">↓</div>
+            <div class="node">ASR</div>
+            <div class="arrow">↓</div>
+            <div class="node">Backend</div>
+            <div class="arrow">↓</div>
+            <div class="node">Recommendation</div>
+          </div>
+          <p class="note-inline">Backend routes every step</p>
+        </div>
+      </div>
+
+      <h3 class="sub">3.3 · Stateless</h3>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Each AI worker has no memory of who asked what before. Every request has to bring everything it needs, which makes it much easier to add more workers when traffic grows.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Services must not store user session data. Each request is independent, which simplifies horizontal scaling.</p>
+      </div>
+
+      <h3 class="sub">3.4 · Model Encapsulation</h3>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The backend doesn't need to know — or care — which AI library or framework is doing the work behind the scenes.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>The backend should never know about <code>Hugging Face</code>, <code>PyTorch</code>, <code>TensorFlow</code>, <code>ONNX</code>, or <code>CUDA</code>. Those implementation details stay inside the AI service.</p>
+      </div>
+
+      <h3 class="sub">3.5 · Replaceable Models</h3>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Today the speech-to-text model is <strong>QwenCleo-ASR</strong>; tomorrow it could be replaced with <strong>Whisper Large V3</strong> — and nothing outside that one service needs to change.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Replacing the underlying model requires changes only inside its service. The API contract exposed to the backend remains unchanged.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="spec" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Standard Folder Structure</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every AI service is organized the same way, so any developer on the team can open a new service and immediately know where to find things — instead of relearning a different layout each time.</p>
+      </div>
+      <div class="folder">
+        <ul>
+          <li>app.py</li>
+          <li>routes.py</li>
+          <li>model.py</li>
+          <li>schemas.py</li>
+          <li>config.py</li>
+          <li>logger.py</li>
+          <li>requirements.txt</li>
+          <li>Dockerfile</li>
+        </ul>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Every service follows this exact structure, and future services must follow the same pattern.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="spec" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2>API Standards</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every AI service answers the same four basic questions the same way: "are you alive?", "what are you?", "what version are you?", and "do the actual work."</p>
+      </div>
+      <table class="spec-table">
+        <tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr>
+        <tr><td>GET</td><td><code>/health</code></td><td>Service health</td></tr>
+        <tr><td>GET</td><td><code>/info</code></td><td>Service information</td></tr>
+        <tr><td>GET</td><td><code>/version</code></td><td>API version</td></tr>
+        <tr><td>POST</td><td>service-specific</td><td>AI inference</td></tr>
+      </table>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Examples of the inference endpoint per service: ASR uses <code>POST /transcribe</code>, Vision uses <code>POST /analyze</code>, Recommendation uses <code>POST /recommend</code>.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="spec" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Request Standards</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Simple lookups (like "are you online?") need no extra information. Actual work requests (like "transcribe this audio") need to send the file or data along, clearly labeled.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p><strong>GET</strong> — no request body. <strong>POST</strong> — structured input, typically <code>multipart/form-data</code> for file uploads or <code>application/json</code> for structured parameters. Each endpoint defines its required fields explicitly.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="spec" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Response Standard</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>No matter which AI worker answers, the reply always arrives in the same shaped envelope — so the backend never has to guess how to open it.</p>
+      </div>
+      <div class="diagram" style="font-family:'IBM Plex Mono', monospace; font-size:13px; background:#F8F9F8;">
+{<br>
+&nbsp;&nbsp;"success": true,<br>
+&nbsp;&nbsp;"message": "Request processed successfully.",<br>
+&nbsp;&nbsp;"data": {},<br>
+&nbsp;&nbsp;"metadata": {}<br>
+}
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <ul>
+          <li><code>success</code> — whether the request completed</li>
+          <li><code>message</code> — human-readable summary</li>
+          <li><code>data</code> — the business result (transcript, detections, recommendations…)</li>
+          <li><code>metadata</code> — technical details (processing time, model name, device, request ID…)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="spec" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Error Handling</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>When something goes wrong, the AI service still replies politely in the same envelope shape — it just never shows the backend (or a user) raw internal error dumps.</p>
+      </div>
+      <div class="diagram" style="font-family:'IBM Plex Mono', monospace; font-size:13px; background:#F8F9F8;">
+{<br>
+&nbsp;&nbsp;"success": false,<br>
+&nbsp;&nbsp;"message": "Unsupported audio format.",<br>
+&nbsp;&nbsp;"data": null,<br>
+&nbsp;&nbsp;"metadata": { "request_id": "…", "processing_time": 0.01 }<br>
+}
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Errors reuse the standard response envelope. Python stack traces or internal implementation details are never exposed to clients.</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="spec" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Logging Standard</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every service keeps a diary of what it's doing — when it started, what request it's handling, how long inference took — without writing down anything private, like the actual words someone said or the image they uploaded.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Every log entry uses a centralized logger and includes timestamp, log level, service name, request ID (if available), and message. Logged events cover startup, model loading, incoming requests, validation failures, inference start/end, processing time, and errors. Sensitive content (ASR transcripts, uploaded images) is not logged by default.</p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="spec" id="s10">
+      <div class="sec-head"><span class="sec-num">10</span><h2>Configuration</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Settings like which device to run on (CPU or GPU), which port to use, or the maximum file size all live outside the code — so they can be changed without touching a single line of the program.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Configuration is externalized (e.g., environment variables): service name, API version, model name, device (CPU/GPU/auto), host, port, max upload size, max input duration, supported formats, log level. No values are hardcoded in business logic.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="spec" id="s11">
+      <div class="sec-head"><span class="sec-num">11</span><h2>Model Layer</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The part of the code that actually runs the AI model is kept completely separate from the part that handles web traffic — so the model logic could theoretically be reused outside of a web API entirely.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Each service has a model wrapper responsible for loading the model, running inference, and returning structured output. The model layer must not depend on FastAPI or any HTTP-specific code.</p>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="spec" id="s12">
+      <div class="sec-head"><span class="sec-num">12</span><h2>Routing Layer</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The "front desk" of each service: it receives the request, checks that it's valid, hands it to the model, and sends back a properly formatted answer. It doesn't do any AI work itself.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Routes receive requests, validate inputs, call the model layer, and return standardized responses. Routes must not contain model-loading logic or business logic.</p>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="spec" id="s13">
+      <div class="sec-head"><span class="sec-num">13</span><h2>Versioning</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every service can be asked "which version of you am I talking to?" — useful for tracking changes as the project evolves.</p>
+      </div>
+      <div class="diagram" style="font-family:'IBM Plex Mono', monospace; font-size:13px; background:#F8F9F8;">
+GET /version&nbsp;&nbsp;→&nbsp;&nbsp;{ "version": "1.0.0" }
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>When introducing breaking API changes, increment the major version and communicate the change to consumers.</p>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="spec" id="s14">
+      <div class="sec-head"><span class="sec-num">14</span><h2>Deployment</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every AI service ships in its own self-contained box (a Docker container), can run on its own, and can be tuned to run on a regular CPU or a faster GPU depending on what's available.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Each service is containerized with Docker, runs independently, is deployable on CPU or GPU environments, and is configurable without code changes.</p>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="spec" id="s15">
+      <div class="sec-head"><span class="sec-num">15</span><h2>Future Services</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The rulebook is future-proof: whatever AI feature gets added next — OCR, translation, a chat assistant, disease detection — it has to follow the exact same conventions as everything already built.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>New AI services must follow this specification without introducing new conventions. Examples: OCR, Translation, Text Summarization, Chat Assistant, Disease Detection.</p>
+      </div>
+    </section>
+
+    <!-- 16 -->
+    <section class="spec" id="s16">
+      <div class="sec-head"><span class="sec-num">16</span><h2>Non-Goals</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>This document is only about the AI services — it deliberately does not cover the mobile app's design, how login works, how the database is structured, or what the screens look like. Those live in other documents.</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Out of scope: mobile application architecture, ASP.NET Core implementation, authentication/authorization, database design, user interface.</p>
+      </div>
+    </section>
+
+    <!-- 17 -->
+    <section class="spec" id="s17">
+      <div class="sec-head"><span class="sec-num">17</span><h2>Request Tracking</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Every single request gets its own tracking number — like a package tracking code. If a user says "my transcription failed at 3:17 PM," the team doesn't have to dig through hundreds of log lines; they search for that one number and instantly see the request's entire journey through the system.</p>
+      </div>
+
+      <h3 class="sub">Request Lifecycle</h3>
+      <div class="diagram">
+        <div class="flow">
+          <div class="node">Mobile App</div>
+          <div class="arrow">↓</div>
+          <div class="node accent">ASP.NET Core<small>Request ID generated</small></div>
+          <div class="arrow">↓</div>
+          <div class="node">AI Service</div>
+          <div class="arrow">↓</div>
+          <div class="node">Logger</div>
+          <div class="arrow">↓</div>
+          <div class="node">Response</div>
+        </div>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>The ASP.NET Core backend generates a unique Request ID (a UUID) for every incoming client request and passes it downstream via an HTTP header: <code>X-Request-ID: 550e8400-e29b-41d4-a716-446655440000</code>. If the header is missing (e.g., local testing via Swagger), the AI service generates its own.</p>
+      </div>
+
+      <h3 class="sub">Logging Standard</h3>
+      <div class="diagram" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; background:#F8F9F8; line-height:1.7;">
+2026-07-11 18:42:11 | INFO | ASR | RequestID=550e8400… | Request received<br>
+2026-07-11 18:42:13 | INFO | ASR | RequestID=550e8400… | Inference completed (1.82 s)<br>
+2026-07-11 18:42:13 | INFO | ASR | RequestID=550e8400… | Response returned
+      </div>
+
+      <h3 class="sub">Response Metadata</h3>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The tracking number is also handed back to whoever made the request, so the backend team can immediately match a person's experience to the exact matching log entries.</p>
+      </div>
+      <div class="diagram" style="font-family:'IBM Plex Mono', monospace; font-size:12.5px; background:#F8F9F8; line-height:1.7;">
+{<br>
+&nbsp;&nbsp;"success": true,<br>
+&nbsp;&nbsp;"message": "Transcription completed successfully.",<br>
+&nbsp;&nbsp;"data": { "transcript": "…" },<br>
+&nbsp;&nbsp;"metadata": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"request_id": "550e8400-e29b-41d4-a716-446655440000",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"processing_time": 1.82,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"model": "QwenCleo-ASR",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"device": "cpu"<br>
+&nbsp;&nbsp;}<br>
+}
+      </div>
+    </section>
+
+    <div class="callout">
+      <h3>The one-sentence version</h3>
+      <p>Every AI capability lives in its own small, replaceable, stateless service that only the backend can reach; every one of them speaks the same request/response language, logs the same way, and can be traced end-to-end with a single ID — so the system stays easy to extend, debug, and hand off to anyone joining the project.</p>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="mono">Companion guide to <em>AI Platform Specification v1.0</em> — Graduation Project</div>
+    <a class="top-link" href="#top">↑ Back to contents</a>
+  </footer>
+
+</div>
+
+</body>
+</html>

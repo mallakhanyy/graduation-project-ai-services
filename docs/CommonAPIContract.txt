@@ -1,0 +1,5 @@
+Every service exposes a /health endpoint.
+Every service returns JSON with a consistent format (success, data, error).
+Every service is packaged with its own Dockerfile.
+ASP.NET Core is the only component that communicates with the AI services.
+AI services never call one another directly.
