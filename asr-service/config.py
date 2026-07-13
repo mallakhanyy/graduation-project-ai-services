@@ -64,7 +64,7 @@ class ServerConfig:
 @dataclass(frozen=True)
 class ModelConfig:
     name: str = field(default_factory=lambda: _env("MODEL_NAME", "mohammedaly22/QwenCleo-ASR"))
-    device: str = field(default_factory=lambda: _env("MODEL_DEVICE", "auto"))  # auto | cpu | cuda
+    device: str = field(default_factory=lambda: _env("MODEL_DEVICE", "auto"))
     trust_remote_code: bool = field(default_factory=lambda: _env_bool("MODEL_TRUST_REMOTE_CODE", True))
 
 

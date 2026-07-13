@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASR Service — .NET Backend Integration Contract</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F4F3;
+    --paper-line: rgba(16,32,40,0.06);
+    --ink:#101E28;
+    --ink-soft:#3C4D57;
+    --navy:#173A4D;
+    --navy-deep:#0E2531;
+    --amber:#C9862E;
+    --amber-soft:#F4E4CB;
+    --teal:#2F7A72;
+    --teal-soft:#DCEEEA;
+    --card:#FFFFFF;
+    --line:#D8DEDB;
+    --radius:10px;
+    --maxw:920px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 42px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:var(--navy);}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  header.hero{
+    background:var(--navy-deep);
+    color:#EFEFEA;
+    padding:64px 0 0 0;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size:38px 38px;
+    pointer-events:none;
+  }
+  .hero-inner{position:relative; z-index:1;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:18px;
+  }
+  h1.title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(30px, 4.6vw, 48px);
+    line-height:1.1;
+    margin:0 0 16px 0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    font-size:17px;
+    color:#C7D2D6;
+    max-width:660px;
+    margin:0 0 40px 0;
+  }
+
+  .titleblock{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:var(--radius) var(--radius) 0 0;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+  }
+  .titleblock .cell{
+    padding:16px 20px;
+    border-right:1px solid rgba(255,255,255,0.14);
+  }
+  .titleblock .cell:last-child{border-right:none;}
+  .titleblock .cell .k{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:#8FA3AB;
+    margin-bottom:6px;
+  }
+  .titleblock .cell .v{
+    font-size:14px;
+    color:#EFEFEA;
+    font-weight:500;
+  }
+
+  @media (max-width:640px){
+    .titleblock{grid-template-columns:repeat(2,1fr);}
+    .titleblock .cell:nth-child(2){border-right:none;}
+  }
+
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin:40px 0 8px 0;
+  }
+  @media (max-width:640px){ .legend{grid-template-columns:1fr;} }
+  .legend .box{
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:14.5px;
+  }
+  .legend .plain{background:var(--amber-soft); border:1px solid #E7C892;}
+  .legend .tech{background:#EAF0EF; border:1px solid #C7D6D2;}
+  .legend .box .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .legend .plain .tag{color:#8A5A17;}
+  .legend .tech .tag{color:#1F4B4A;}
+
+  nav.toc{
+    margin:36px 0 8px 0;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px 6px 20px;
+  }
+  nav.toc h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    margin:0 0 14px 0;
+    font-weight:600;
+  }
+  .toc-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:4px 18px;
+    padding-bottom:14px;
+  }
+  @media (max-width:560px){ .toc-grid{grid-template-columns:1fr;} }
+  .toc-grid a{
+    display:block;
+    font-size:13.5px;
+    color:var(--ink);
+    text-decoration:none;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .toc-grid a:hover{color:var(--navy); }
+  .toc-grid a span.num{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--amber);
+    margin-right:8px;
+    font-size:12.5px;
+  }
+
+  main{padding:8px 0 80px 0;}
+  section.spec{
+    margin-top:56px;
+    scroll-margin-top:24px;
+  }
+  section.spec .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:18px;
+    border-bottom:2px solid var(--navy);
+    padding-bottom:10px;
+  }
+  section.spec .sec-num{
+    font-family:'IBM Plex Mono', monospace;
+    color:#fff;
+    background:var(--navy);
+    font-size:13px;
+    font-weight:600;
+    padding:3px 9px;
+    border-radius:5px;
+  }
+  section.spec h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:25px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  section.spec h3.sub{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    margin:28px 0 10px 0;
+    color:var(--navy);
+  }
+
+  .panel{
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin-bottom:14px;
+    font-size:15px;
+  }
+  .panel.plain{background:var(--amber-soft); border:1px solid #E7C892;}
+  .panel.tech{background:#fff; border:1px solid var(--line);}
+  .panel.warn{background:#FBEDE6; border:1px solid #E0B49B;}
+  .panel .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .panel.plain .tag{color:#8A5A17;}
+  .panel.tech .tag{color:#1F4B4A;}
+  .panel.warn .tag{color:#A14B2A;}
+  .panel p{margin:0 0 8px 0;}
+  .panel p:last-child{margin-bottom:0;}
+  .panel ul{margin:6px 0 0 0; padding-left:20px;}
+  .panel li{margin-bottom:4px;}
+
+  code, .mono{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92em;
+    background:#EEF1F0;
+    padding:1px 6px;
+    border-radius:4px;
+    color:#123;
+  }
+
+  table.spec-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    font-size:13.8px;
+    margin:6px 0 18px 0;
+  }
+  table.spec-table th, table.spec-table td{
+    text-align:left;
+    padding:9px 14px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.spec-table th{
+    background:#EAF0EF;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+  }
+  table.spec-table tr:last-child td{border-bottom:none;}
+
+  .diagram{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 20px;
+    margin:6px 0 18px 0;
+  }
+  .flow{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
+  }
+  .flow .node{
+    background:#F5F7F6;
+    border:1.5px solid var(--navy);
+    border-radius:8px;
+    padding:10px 18px;
+    font-size:13.5px;
+    font-weight:600;
+    text-align:center;
+    color:var(--navy-deep);
+    min-width:170px;
+  }
+  .flow .node.accent{background:var(--teal-soft); border-color:var(--teal);}
+  .flow .node small{display:block; font-weight:400; font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .flow .arrow{font-size:18px; color:var(--navy); line-height:1; margin:4px 0;}
+
+  pre.code-block{
+    background:#0E2531;
+    color:#DCEEEA;
+    border-radius:var(--radius);
+    padding:18px 20px;
+    overflow-x:auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.8px;
+    line-height:1.65;
+    margin:6px 0 18px 0;
+  }
+  pre.code-block .cmt{color:#7FA39A;}
+  pre.code-block .str{color:#E8C48A;}
+  pre.code-block .kw{color:#7FB8D6;}
+
+  .badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    font-weight:600;
+    padding:2px 9px;
+    border-radius:999px;
+    margin-right:6px;
+  }
+  .badge.get{background:#DCEEEA; color:#1F4B4A;}
+  .badge.post{background:#F4E4CB; color:#8A5A17;}
+
+  .callout{
+    background:var(--navy-deep);
+    color:#EAF0EE;
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin:56px 0;
+  }
+  .callout h3{
+    font-family:'Fraunces', serif;
+    margin:0 0 10px 0;
+    font-size:19px;
+    color:#fff;
+  }
+  .callout p{margin:0 0 8px 0; font-size:14.5px; color:#C7D2D6;}
+  .callout p:last-child{margin-bottom:0;}
+
+  footer{
+    text-align:center;
+    padding:40px 0 60px 0;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  footer .mono{background:none; padding:0;}
+
+  .top-link{
+    display:inline-block;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--ink-soft);
+    text-decoration:none;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .checklist{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:4px 20px;
+    margin:6px 0 18px 0;
+  }
+  .checklist label{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .checklist label:last-child{border-bottom:none;}
+  .checklist input{margin-top:3px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Integration Contract · For the .NET Backend Team</div>
+    <h1 class="title">ASR Service — Backend Integration Contract</h1>
+    <p class="subtitle">Everything the ASP.NET Core backend needs to send audio to the ASR service and receive the finished transcript — connection details, message shapes, and working C# code, in one place.</p>
+    <div class="titleblock">
+      <div class="cell"><div class="k">Service</div><div class="v">ASR Service (FastAPI)</div></div>
+      <div class="cell"><div class="k">Consumer</div><div class="v">ASP.NET Core Backend</div></div>
+      <div class="cell"><div class="k">Transport</div><div class="v">HTTP (request) + RabbitMQ (result)</div></div>
+      <div class="cell"><div class="k">Status</div><div class="v">Verified — local CPU test passed</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="legend">
+    <div class="box plain">
+      <span class="tag">🟠 In Plain English</span>
+      What's actually happening and why — for anyone reviewing the integration, not just the engineer wiring it up.
+    </div>
+    <div class="box tech">
+      <span class="tag">🔧 Technical Detail</span>
+      The exact contract — field names, types, endpoints, queue names — for the person writing the C# code.
+    </div>
+  </div>
+
+  <nav class="toc" id="top">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <a href="#s1"><span class="num">01</span>The Big Picture</a>
+      <a href="#s2"><span class="num">02</span>Connection Details</a>
+      <a href="#s3"><span class="num">03</span>Step 1 — Send the Audio (HTTP)</a>
+      <a href="#s4"><span class="num">04</span>Step 2 — Receive the Result (RabbitMQ)</a>
+      <a href="#s5"><span class="num">05</span>Message Schema Reference</a>
+      <a href="#s6"><span class="num">06</span>C# — Sending a Request</a>
+      <a href="#s7"><span class="num">07</span>C# — Consuming Results</a>
+      <a href="#s8"><span class="num">08</span>Error Handling</a>
+      <a href="#s9"><span class="num">09</span>Correlation &amp; Idempotency</a>
+      <a href="#s10"><span class="num">10</span>Environment Checklist</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- 1 -->
+    <section class="spec" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2>The Big Picture</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Speech-to-text takes real time to run — long enough that making a user's app just sit there and wait would feel broken. So the ASR service never makes anyone wait: the backend sends the audio, the ASR service instantly says "got it, working on it," and processes it in the background. The moment it's done, the result shows up in a queue the backend is watching — and the backend takes it from there (updating a record, sending a push notification, whatever the product needs).</p>
+      </div>
+      <div class="diagram">
+        <div class="flow">
+          <div class="node">.NET Backend<small>POST /transcribe (multipart file)</small></div>
+          <div class="arrow">↓</div>
+          <div class="node accent">ASR Service<small>replies 202 Accepted immediately</small></div>
+          <div class="arrow">↓</div>
+          <div class="node">RabbitMQ<small>ASR service processes in the background</small></div>
+          <div class="arrow">↓</div>
+          <div class="node accent">.NET Backend<small>consumes result from asr.transcription.results</small></div>
+        </div>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Two separate legs, two separate protocols:</p>
+        <ul>
+          <li><strong>Request leg — HTTP.</strong> Backend calls <code>POST /transcribe</code> on the ASR service directly. Response is <code>202 Accepted</code> in well under a second, containing a <code>request_id</code>.</li>
+          <li><strong>Result leg — RabbitMQ.</strong> The backend consumes the <code>asr.transcription.results</code> queue. Messages there are keyed by the same <code>request_id</code>, published whenever a job finishes (success or failure).</li>
+        </ul>
+        <p>The backend never polls the ASR service for status. It reacts to messages arriving on the results queue.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="spec" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Connection Details</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Two addresses to plug in: where the ASR service's HTTP API lives, and where the shared RabbitMQ broker lives. Both are environment-specific — different values for local dev, staging, and production — so treat them as configuration, not constants.</p>
+      </div>
+      <table class="spec-table">
+        <tr><th>What</th><th>Local / Dev (current)</th><th>Notes</th></tr>
+        <tr><td>ASR HTTP base URL</td><td><code>http://localhost:8000</code></td><td>Replace host with the ASR service's real address once deployed</td></tr>
+        <tr><td>RabbitMQ host</td><td><code>localhost</code></td><td>Point at the shared broker in staging/production, not a per-service instance</td></tr>
+        <tr><td>RabbitMQ port (AMQP)</td><td><code>5672</code></td><td>Standard AMQP port</td></tr>
+        <tr><td>RabbitMQ vhost</td><td><code>/</code></td><td></td></tr>
+        <tr><td>RabbitMQ user / password</td><td><code>guest</code> / <code>guest</code></td><td>Dev-only credentials — production will use real ones, request separately</td></tr>
+        <tr><td>Results queue name</td><td><code>asr.transcription.results</code></td><td>Backend consumes this queue</td></tr>
+      </table>
+      <div class="panel warn">
+        <span class="tag">⚠ Not for the backend</span>
+        <p>There is also an <code>asr.transcription.requests</code> queue — that's internal to the ASR service (API layer → background worker) and the backend should never publish to or consume from it directly. The only supported way to submit a job is the HTTP endpoint in §3.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="spec" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Step 1 — Send the Audio (HTTP)</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>A normal file upload, like any REST API. The only thing to remember: the response you get back is <em>not</em> the transcript — it's just a receipt confirming the job was accepted. The real transcript arrives later, over RabbitMQ (§4).</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p><span class="badge post">POST</span><code>/transcribe</code></p>
+        <p><strong>Content-Type:</strong> <code>multipart/form-data</code></p>
+        <table class="spec-table">
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td><code>file</code></td><td>binary (form file)</td><td>Yes</td><td>Supported extensions: <code>.wav</code>, <code>.mp3</code>, <code>.flac</code>, <code>.m4a</code>. Max size: 25&nbsp;MB (configurable server-side).</td></tr>
+          <tr><td><code>language</code></td><td>string (form field)</td><td>No</td><td>Defaults to <code>"Arabic"</code> if omitted.</td></tr>
+        </table>
+        <p><strong>Optional header:</strong> <code>X-Request-ID</code> — if the backend already has a correlation ID (e.g. from the original client request), pass it here and the ASR service will use it instead of generating its own. If omitted, the service generates a UUID and returns it in the response body.</p>
+        <p><strong>Response:</strong> <code>202 Accepted</code></p>
+      </div>
+      <pre class="code-block">POST /transcribe HTTP/1.1
+Host: &lt;asr-service-host&gt;:8000
+Content-Type: multipart/form-data; boundary=...
+X-Request-ID: 550e8400-e29b-41d4-a716-446655440000  <span class="cmt">// optional</span>
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="clip.wav"
+Content-Type: audio/wav
+
+&lt;binary audio data&gt;
+--boundary
+Content-Disposition: form-data; name="language"
+
+Arabic
+--boundary--</pre>
+      <pre class="code-block">HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+{
+  <span class="str">"success"</span>: true,
+  <span class="str">"message"</span>: <span class="str">"Request accepted for processing. The result will be delivered asynchronously."</span>,
+  <span class="str">"metadata"</span>: null,
+  <span class="str">"data"</span>: {
+    <span class="str">"request_id"</span>: <span class="str">"9bdb4672-9ac0-4674-b724-ccd02069f637"</span>,
+    <span class="str">"status"</span>: <span class="str">"processing"</span>
+  }
+}</pre>
+      <div class="panel warn">
+        <span class="tag">⚠ Common mistake</span>
+        <p>Do not treat this response as the transcript, and do not poll <code>/transcribe</code> again for status — there is no status-polling endpoint. Store the <code>request_id</code> and wait for the matching message on the results queue.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="spec" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Step 2 — Receive the Result (RabbitMQ)</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>The backend keeps a listener running against one queue. Whenever the ASR service finishes a job — successfully or not — a message shows up there. That message has everything needed: which request it belongs to, whether it worked, and the transcript (or the failure reason).</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p><strong>Queue:</strong> <code>asr.transcription.results</code> — durable, so messages survive a RabbitMQ restart.</p>
+        <p><strong>Message body:</strong> UTF-8 JSON, <code>content_type: application/json</code>, <code>delivery_mode: persistent</code>.</p>
+        <p><strong>Delivery guarantee:</strong> the ASR service acknowledges its own internal job only after successfully publishing this message, so a crash mid-processing does not silently drop a result — worst case the job is retried and a duplicate message could theoretically appear. Consumers should be written to tolerate a duplicate <code>request_id</code> safely (see §9).</p>
+        <p>Full field reference in §5.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="spec" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Message Schema Reference</h2></div>
+
+      <h3 class="sub">5.1 · Success</h3>
+      <pre class="code-block">{
+  <span class="str">"success"</span>: true,
+  <span class="str">"message"</span>: <span class="str">"Transcription completed successfully."</span>,
+  <span class="str">"metadata"</span>: {
+    <span class="str">"request_id"</span>: <span class="str">"9bdb4672-9ac0-4674-b724-ccd02069f637"</span>,
+    <span class="str">"processing_time"</span>: 250.83
+  },
+  <span class="str">"data"</span>: {
+    <span class="str">"transcript"</span>: <span class="str">"بصوا انا كده بجرب اتنين موديل..."</span>,
+    <span class="str">"language"</span>: <span class="str">"Arabic"</span>
+  }
+}</pre>
+
+      <h3 class="sub">5.2 · Failure</h3>
+      <pre class="code-block">{
+  <span class="str">"success"</span>: false,
+  <span class="str">"message"</span>: <span class="str">"Transcription failed."</span>,
+  <span class="str">"metadata"</span>: {
+    <span class="str">"request_id"</span>: <span class="str">"9bdb4672-9ac0-4674-b724-ccd02069f637"</span>,
+    <span class="str">"processing_time"</span>: 4.12
+  },
+  <span class="str">"data"</span>: null
+}</pre>
+      <div class="panel warn">
+        <span class="tag">⚠ Note</span>
+        <p>Failure messages intentionally do not include a raw error string or stack trace — per the platform's error-handling standard, internal details are never exposed outside the service. If a specific failure needs investigating, check the ASR service's own logs (searchable by <code>request_id</code>).</p>
+      </div>
+
+      <h3 class="sub">5.3 · Field reference</h3>
+      <table class="spec-table">
+        <tr><th>Field</th><th>Type</th><th>Always present?</th><th>Meaning</th></tr>
+        <tr><td><code>success</code></td><td>boolean</td><td>Yes</td><td><code>true</code> if transcription completed, <code>false</code> if it failed</td></tr>
+        <tr><td><code>message</code></td><td>string</td><td>Yes</td><td>Human-readable summary, safe to log or surface</td></tr>
+        <tr><td><code>metadata.request_id</code></td><td>string (UUID)</td><td>Yes</td><td>Matches the <code>request_id</code> returned by the original <code>POST /transcribe</code> call — this is the correlation key</td></tr>
+        <tr><td><code>metadata.processing_time</code></td><td>number (seconds)</td><td>Yes</td><td>Wall-clock time the model spent on this job (excludes queue wait time)</td></tr>
+        <tr><td><code>data.transcript</code></td><td>string</td><td>Only on success</td><td>The transcribed text, UTF-8. Arabic text is transmitted as standard JSON — any compliant JSON parser (including <code>System.Text.Json</code>) decodes it correctly with no extra handling</td></tr>
+        <tr><td><code>data.language</code></td><td>string</td><td>Only on success</td><td>Echoes the language hint used for transcription</td></tr>
+        <tr><td><code>data</code></td><td>null</td><td>On failure</td><td>Always <code>null</code> when <code>success</code> is <code>false</code></td></tr>
+      </table>
+    </section>
+
+    <!-- 6 -->
+    <section class="spec" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2>C# — Sending a Request</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Standard multipart upload using .NET's built-in <code>HttpClient</code> — nothing ASR-specific about the mechanics, just the field names to match.</p>
+      </div>
+      <pre class="code-block"><span class="kw">using</span> var httpClient = <span class="kw">new</span> HttpClient { BaseAddress = <span class="kw">new</span> Uri(<span class="str">"http://&lt;asr-service-host&gt;:8000"</span>) };
+
+<span class="kw">using</span> var form = <span class="kw">new</span> MultipartFormDataContent();
+<span class="kw">using</span> var fileStream = File.OpenRead(<span class="str">"clip.wav"</span>);
+<span class="kw">using</span> var fileContent = <span class="kw">new</span> StreamContent(fileStream);
+fileContent.Headers.ContentType = <span class="kw">new</span> MediaTypeHeaderValue(<span class="str">"audio/wav"</span>);
+
+form.Add(fileContent, <span class="str">"file"</span>, <span class="str">"clip.wav"</span>);
+form.Add(<span class="kw">new</span> StringContent(<span class="str">"Arabic"</span>), <span class="str">"language"</span>);
+
+<span class="kw">using</span> var request = <span class="kw">new</span> HttpRequestMessage(HttpMethod.Post, <span class="str">"/transcribe"</span>) { Content = form };
+request.Headers.Add(<span class="str">"X-Request-ID"</span>, correlationId.ToString()); <span class="cmt">// optional — omit to let the service generate one</span>
+
+var response = <span class="kw">await</span> httpClient.SendAsync(request);
+response.EnsureSuccessStatusCode(); <span class="cmt">// expect 202</span>
+
+var body = <span class="kw">await</span> response.Content.ReadFromJsonAsync&lt;TranscribeAcceptedResponse&gt;();
+var requestId = body.Data.RequestId; <span class="cmt">// store this — it's how you'll match the result later</span></pre>
+      <p class="note-inline" style="font-size:12.5px;color:var(--ink-soft);font-style:italic;">Matching C# record for the response shape:</p>
+      <pre class="code-block"><span class="kw">public record</span> TranscribeAcceptedResponse(<span class="kw">bool</span> Success, <span class="kw">string</span> Message, <span class="kw">object</span>? Metadata, TranscribeAcceptedData Data);
+<span class="kw">public record</span> TranscribeAcceptedData(<span class="kw">string</span> RequestId, <span class="kw">string</span> Status);</pre>
+    </section>
+
+    <!-- 7 -->
+    <section class="spec" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2>C# — Consuming Results</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>A long-running listener (a hosted background service, in ASP.NET Core terms) that stays connected to RabbitMQ and reacts every time a result message arrives — this is where the backend actually finds out a transcription finished and can trigger whatever comes next (saving to the database, pushing a notification, etc).</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <p>Uses the official <code>RabbitMQ.Client</code> NuGet package. Example below is a minimal <code>BackgroundService</code> — adapt to your existing hosting/DI setup.</p>
+      </div>
+      <pre class="code-block"><span class="kw">public class</span> AsrResultsConsumer : BackgroundService
+{
+    <span class="kw">private const string</span> QueueName = <span class="str">"asr.transcription.results"</span>;
+
+    <span class="kw">protected override async</span> Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var factory = <span class="kw">new</span> ConnectionFactory
+        {
+            HostName = <span class="str">"&lt;rabbitmq-host&gt;"</span>,
+            Port = 5672,
+            UserName = <span class="str">"&lt;user&gt;"</span>,
+            Password = <span class="str">"&lt;password&gt;"</span>,
+            VirtualHost = <span class="str">"/"</span>
+        };
+
+        <span class="kw">using var</span> connection = <span class="kw">await</span> factory.CreateConnectionAsync(stoppingToken);
+        <span class="kw">using var</span> channel = <span class="kw">await</span> connection.CreateChannelAsync(cancellationToken: stoppingToken);
+
+        <span class="kw">await</span> channel.QueueDeclareAsync(QueueName, durable: <span class="kw">true</span>, exclusive: <span class="kw">false</span>, autoDelete: <span class="kw">false</span>, cancellationToken: stoppingToken);
+
+        var consumer = <span class="kw">new</span> AsyncEventingBasicConsumer(channel);
+        consumer.ReceivedAsync += <span class="kw">async</span> (model, ea) =>
+        {
+            <span class="kw">var</span> json = Encoding.UTF8.GetString(ea.Body.ToArray());
+            <span class="kw">var</span> result = JsonSerializer.Deserialize&lt;AsrResultMessage&gt;(json);
+
+            <span class="kw">if</span> (result.Success)
+            {
+                <span class="cmt">// e.g. save result.Data.Transcript against result.Metadata.RequestId,
+                // then notify the relevant user</span>
+            }
+            <span class="kw">else</span>
+            {
+                <span class="cmt">// e.g. mark the job failed, log result.Metadata.RequestId for follow-up</span>
+            }
+
+            <span class="kw">await</span> channel.BasicAckAsync(ea.DeliveryTag, multiple: <span class="kw">false</span>);
+        };
+
+        <span class="kw">await</span> channel.BasicConsumeAsync(QueueName, autoAck: <span class="kw">false</span>, consumer, stoppingToken);
+
+        <span class="kw">await</span> Task.Delay(Timeout.Infinite, stoppingToken);
+    }
+}</pre>
+      <p class="note-inline" style="font-size:12.5px;color:var(--ink-soft);font-style:italic;">Matching C# records for the result message:</p>
+      <pre class="code-block"><span class="kw">public record</span> AsrResultMessage(<span class="kw">bool</span> Success, <span class="kw">string</span> Message, AsrMetadata Metadata, AsrTranscriptData? Data);
+<span class="kw">public record</span> AsrMetadata(<span class="kw">string</span> RequestId, <span class="kw">double</span> ProcessingTime);
+<span class="kw">public record</span> AsrTranscriptData(<span class="kw">string</span> Transcript, <span class="kw">string</span> Language);</pre>
+    </section>
+
+    <!-- 8 -->
+    <section class="spec" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Error Handling</h2></div>
+      <table class="spec-table">
+        <tr><th>Scenario</th><th>What happens</th><th>Backend should</th></tr>
+        <tr><td>Unsupported audio format</td><td><code>POST /transcribe</code> returns <code>400</code> immediately (not queued)</td><td>Surface the error at upload time — no result message will ever arrive for this attempt, since no <code>request_id</code> was issued</td></tr>
+        <tr><td>File too large (&gt;25MB)</td><td><code>400</code> immediately, same as above</td><td>Same — handle synchronously at upload time</td></tr>
+        <tr><td>Transcription fails after being queued</td><td><code>202</code> was already returned; a failure message (§5.2) later arrives on the results queue</td><td>Watch for <code>success: false</code> in consumed messages, not just HTTP status codes</td></tr>
+        <tr><td>ASR service is down</td><td><code>POST /transcribe</code> connection fails / times out</td><td>Standard HTTP retry/backoff on the backend's side; no job was created, so nothing to correlate</td></tr>
+        <tr><td>RabbitMQ briefly unavailable</td><td>ASR service auto-reconnects (robust connection) and retains queued jobs — durable queue survives a broker restart</td><td>Backend consumer should also reconnect automatically; no messages are lost, only delayed</td></tr>
+      </table>
+    </section>
+
+    <!-- 9 -->
+    <section class="spec" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Correlation &amp; Idempotency</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Always use <code>request_id</code> to match a result back to the original request — never assume ordering or timing. And because message queues can, in rare failure scenarios, deliver the same message more than once, the backend's handling of a result should be safe to run twice without causing problems (e.g. use an "upsert" rather than an "insert" when saving the transcript).</p>
+      </div>
+      <div class="panel tech">
+        <span class="tag">🔧 Technical Detail</span>
+        <ul>
+          <li><code>request_id</code> is a UUID, generated either by the backend (via <code>X-Request-ID</code>) or by the ASR service if omitted — always present and always the correlation key.</li>
+          <li>Jobs are processed one at a time per ASR worker (<code>RABBITMQ_PREFETCH_COUNT=1</code> by default) — no guarantee of completion order matching submission order if multiple requests are in flight.</li>
+          <li>Design the result handler to be idempotent on <code>request_id</code> (e.g. <code>UPDATE ... WHERE request_id = ...</code> rather than assuming a fresh insert).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="spec" id="s10">
+      <div class="sec-head"><span class="sec-num">10</span><h2>Environment Checklist</h2></div>
+      <div class="panel plain">
+        <span class="tag">🟠 In Plain English</span>
+        <p>Before wiring this up in staging or production, confirm these values with whoever owns the ASR service deployment — the ones in this document are local dev defaults and will not work as-is anywhere else.</p>
+      </div>
+      <div class="checklist">
+        <label><input type="checkbox" disabled> ASR service's real HTTP base URL for this environment</label>
+        <label><input type="checkbox" disabled> Shared RabbitMQ host/port for this environment (not <code>localhost</code>)</label>
+        <label><input type="checkbox" disabled> Real RabbitMQ credentials (not <code>guest</code>/<code>guest</code>)</label>
+        <label><input type="checkbox" disabled> Confirmed network access from the backend to both the ASR HTTP port and the RabbitMQ AMQP port</label>
+        <label><input type="checkbox" disabled> Confirmed queue name matches exactly: <code>asr.transcription.results</code></label>
+        <label><input type="checkbox" disabled> Decided how the backend surfaces failures to the end user (retry? notify? silent log?)</label>
+      </div>
+    </section>
+
+    <div class="callout">
+      <h3>The one-sentence version</h3>
+      <p>Upload the file over HTTP and get an instant receipt with a <code>request_id</code>; watch the <code>asr.transcription.results</code> RabbitMQ queue for a message with that same <code>request_id</code> to get the finished transcript — never poll, never assume ordering, always handle results idempotently.</p>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="mono">ASR Service — Integration Contract for the .NET Backend Team</div>
+    <a class="top-link" href="#top">↑ Back to contents</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
