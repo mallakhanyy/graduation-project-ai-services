@@ -5,9 +5,11 @@ from shared.config import settings
 from shared.logger import logger
 
 from infrastructure.models.qwen_asr import QwenASR
-from application.services.transcription_service import TranscriptionService
 from infrastructure.messaging.rabbitmq_consumer import RabbitMQConsumer
 from infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
+from infrastructure.storage.http_audio_downloader import HttpAudioDownloader
+
+from application.services.transcription_service import TranscriptionService
 
 
 async def main():
@@ -17,7 +19,11 @@ async def main():
     try:
         asr_model = QwenASR()
 
-        transcription_service = TranscriptionService(asr_model)
+        transcription_service = TranscriptionService(
+            asr_model
+        )
+
+        audio_downloader = HttpAudioDownloader()
 
         logger.info("Connecting to RabbitMQ...")
 
@@ -31,43 +37,62 @@ async def main():
             )
         )
 
-        channel: aio_pika.abc.AbstractChannel = await connection.channel()
+        channel: aio_pika.abc.AbstractChannel = (
+            await connection.channel()
+        )
 
         await channel.set_qos(
             prefetch_count=settings.rabbitmq.prefetch_count
         )
 
-        # Queue that receives requests from .NET
-        queue: aio_pika.abc.AbstractQueue = await channel.declare_queue(
-            settings.rabbitmq.requests_queue,
-            durable=True,
-            auto_delete=False,
+        requests_queue: aio_pika.abc.AbstractQueue = (
+            await channel.declare_queue(
+                settings.rabbitmq.requests_queue,
+                durable=True,
+                auto_delete=False,
+            )
         )
 
-        # Queue that sends results back to .NET
         await channel.declare_queue(
             settings.rabbitmq.results_queue,
             durable=True,
             auto_delete=False,
         )
 
-        logger.info("RabbitMQ connected successfully.")
+        logger.info(
+            "RabbitMQ connected successfully."
+        )
 
-        publisher = RabbitMQPublisher(channel)
+        publisher = RabbitMQPublisher(
+            channel
+        )
 
         consumer = RabbitMQConsumer(
-            transcription_service,
-            publisher,
-            queue,
+            transcription_service=transcription_service,
+            publisher=publisher,
+            queue=requests_queue,
+            audio_downloader=audio_downloader,
         )
 
         await consumer.start()
 
     finally:
+
         if connection is not None:
-            logger.info("Closing RabbitMQ connection...")
+
+            logger.info(
+                "Closing RabbitMQ connection..."
+            )
+
             await connection.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+
+    try:
+        asyncio.run(main())
+
+    except KeyboardInterrupt:
+        logger.info(
+            "ASR Service stopped."
+        )

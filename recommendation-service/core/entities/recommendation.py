@@ -1,13 +1,11 @@
-"""
-Recommendation Entity
+from dataclasses import dataclass, field
+from core.value_objects.recommendation_item import RecommendationItem
+from core.entities.retrieved_chunk import RetrievedChunk
 
-Represents the final recommendation generated for a user's agricultural or
-water management problem.
-
-This entity encapsulates the original problem description along with one or
-more recommendation items produced from the retrieved knowledge base.
-
-The Recommendation entity is part of the domain layer and contains only
-business data. It is independent of infrastructure concerns such as RabbitMQ,
-Qdrant, MinIO, FastAPI, or the underlying LLM implementation.
-"""
+@dataclass
+class Recommendation:
+    request_id : str
+    problem : str
+    recommendations : list[RecommendationItem] = field(default_factory=list)
+    retrieved_chunks : list[RetrievedChunk] = field(default_factory=list)
+    
