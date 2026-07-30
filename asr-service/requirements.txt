@@ -16,3 +16,4 @@ qwen-asr==0.0.6
 
 numpy==2.4.6
 soundfile==0.14.0
+httpx==0.28.1
