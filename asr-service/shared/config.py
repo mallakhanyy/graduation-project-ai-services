@@ -189,6 +189,22 @@ class RabbitMQConfig:
         )
     )
 
+# ==========================================================
+# API Configuration
+# ==========================================================
+
+@dataclass(frozen=True)
+class APIConfig:
+
+    host: str = field(
+        default_factory=lambda:
+        _env("API_HOST", "0.0.0.0")
+    )
+
+    port: int = field(
+        default_factory=lambda:
+        _env_int("API_PORT", 8000)
+    )
 
 # ==========================================================
 # Main Settings
@@ -220,7 +236,10 @@ class Settings:
     rabbitmq: RabbitMQConfig = field(
         default_factory=RabbitMQConfig
     )
-
+    
+    api: APIConfig = field(
+        default_factory=APIConfig
+    )
 
 # ==========================================================
 # Shared Settings Instance

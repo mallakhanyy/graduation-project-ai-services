@@ -56,9 +56,7 @@ class RabbitMQConsumer:
             request_id = message.correlation_id
 
             try:
-                payload = json.loads(
-                    message.body.decode("utf-8")
-                )
+                payload = json.loads(message.body.decode("utf-8"))
 
                 request = TranscriptionRequest(
                     request_id=request_id,

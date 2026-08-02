@@ -1,27 +1,44 @@
 import asyncio
 import aio_pika
-
 from shared.config import settings
 from shared.logger import logger
-
 from infrastructure.models.qwen_asr import QwenASR
 from infrastructure.messaging.rabbitmq_consumer import RabbitMQConsumer
 from infrastructure.messaging.rabbitmq_publisher import RabbitMQPublisher
 from infrastructure.storage.http_audio_downloader import HttpAudioDownloader
-
 from application.services.transcription_service import TranscriptionService
+from api import dependencies
+import threading
+import uvicorn
+from api.app import app
 
+def start_api():
+    uvicorn.run(
+        app,
+        host=settings.api.host,
+        port=settings.api.port,
+    )
+
+def create_transcription_service() -> TranscriptionService:
+    asr_model = QwenASR()
+    return TranscriptionService(asr_model)
 
 async def main():
 
     connection = None
 
     try:
-        asr_model = QwenASR()
 
-        transcription_service = TranscriptionService(
-            asr_model
+        transcription_service = create_transcription_service()
+
+        dependencies.transcription_service = transcription_service
+
+        api_thread = threading.Thread(
+            target=start_api,
+            daemon=True,
         )
+
+        api_thread.start()
 
         audio_downloader = HttpAudioDownloader()
 
