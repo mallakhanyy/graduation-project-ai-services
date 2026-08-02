@@ -5,9 +5,7 @@ from datetime import timedelta
 
 import aio_pika
 from minio import Minio
-
 from shared.config import settings
-
 
 AUDIO_FILE = "audio2878.wav"
 MINIO_BUCKET = "asr-audio"
@@ -63,6 +61,7 @@ async def main():
     # 3. Build request payload
     # -----------------------------
     request = {
+        "request_id": request_id,
         "audio_url": audio_url,
         "extension": AUDIO_FILE.rsplit(".", 1)[-1],
     }
