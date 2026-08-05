@@ -43,7 +43,11 @@ RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
 # Copy application code
-COPY --chown=appuser:appuser app/ ./app/
+# ========== CHANGE THIS ==========
+COPY --chown=appuser:appuser moderation_service/ ./moderation_service/
+# ========== INSTEAD OF ==========
+# COPY --chown=appuser:appuser app/ ./app/
+
 COPY --chown=appuser:appuser .env .env
 
 # Switch to non-root user
@@ -57,4 +61,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 EXPOSE 8000
 
 # Default command (will be overridden for worker)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ========== CHANGE THIS ==========
+CMD ["uvicorn", "moderation_service.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ========== INSTEAD OF ==========
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

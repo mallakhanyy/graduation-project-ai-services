@@ -3,10 +3,10 @@
 from fastapi import Depends
 from typing import Annotated
 
-from app.services.moderation_service import ModerationService
-from app.infrastructure.model.arabert_model import AraBERTModel  # ← استخدم النموذج الحقيقي
-from app.infrastructure.rabbitmq.producer import RabbitMQProducer
-from app.core.logger import logger
+from moderation_service.services.moderation_service import ModerationService
+from moderation_service.infrastructure.model.arabert_model import AraBERTModel
+from moderation_service.infrastructure.rabbitmq.producer import RabbitMQProducer
+from moderation_service.core.logger import logger
 
 # Singleton instances
 _model_service = None

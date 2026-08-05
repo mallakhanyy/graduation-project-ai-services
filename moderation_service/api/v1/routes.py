@@ -3,16 +3,16 @@
 import time
 from fastapi import APIRouter, HTTPException
 
-from app.api.v1.dependencies import (
+from moderation_service.api.v1.dependencies import (
     ModerationServiceDep,
     RabbitMQProducerDep,
 )
-from app.core.config import settings
-from app.core.logger import logger
-from app.domain.entities import Comment
-from app.domain.value_objects import CommentId, CommentText
-from app.schemas.request import ModerationRequest
-from app.schemas.response import (
+from moderation_service.core.config import settings
+from moderation_service.core.logger import logger
+from moderation_service.domain.entities import Comment
+from moderation_service.domain.value_objects import CommentId, CommentText
+from moderation_service.schemas.request import ModerationRequest
+from moderation_service.schemas.response import (
     ModerationResponse,
     AsyncModerationResponse,
     HealthResponse,

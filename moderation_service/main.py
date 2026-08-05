@@ -3,9 +3,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import routes
-from app.core.config import settings
-from app.core.logger import logger
+from moderation_service.api.v1 import routes
+from moderation_service.core.config import settings
+from moderation_service.core.logger import logger
 
 app = FastAPI(
     title=settings.app_name,

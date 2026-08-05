@@ -3,9 +3,10 @@
 import json
 import pika
 from typing import Optional
+from moderation_service.core.config import settings
+from moderation_service.core.exceptions import RabbitMQConnectionError
+from moderation_service.core.logger import logger
 
-from app.core.config import settings
-from app.core.logger import logger
 
 
 class ResultProducer:

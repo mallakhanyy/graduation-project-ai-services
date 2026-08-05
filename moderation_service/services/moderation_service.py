@@ -2,12 +2,12 @@
 
 import time
 
-from app.core.exceptions import InvalidTextError
-from app.core.logger import logger
-from app.core.config import settings
-from app.domain.entities import Comment, ModerationResult
-from app.domain.value_objects import Confidence, ModerationLabel
-from app.services.interfaces.model_service_interface import ModelService
+from moderation_service.core.exceptions import InvalidTextError
+from moderation_service.core.logger import logger
+from moderation_service.core.config import settings
+from moderation_service.domain.entities import Comment, ModerationResult
+from moderation_service.domain.value_objects import Confidence, ModerationLabel
+from moderation_service.services.interfaces.model_service_interface import ModelService
 
 
 class ModerationService:

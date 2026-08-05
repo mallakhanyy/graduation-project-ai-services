@@ -34,7 +34,10 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./app/infrastructure/model/WAHA_KUN_AraBERT:/app/app/infrastructure/model/WAHA_KUN_AraBERT:ro
+      # ===== UPDATED =====
+      - ./moderation_service/infrastructure/model/WAHA_KUN_AraBERT:/app/moderation_service/infrastructure/model/WAHA_KUN_AraBERT:ro
+      # ===== INSTEAD OF =====
+      # - ./app/infrastructure/model/WAHA_KUN_AraBERT:/app/app/infrastructure/model/WAHA_KUN_AraBERT:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
@@ -54,7 +57,10 @@ services:
   moderation-worker:
     build: .
     container_name: moderation-worker
-    command: python -m app.workers.moderation_worker
+    # ===== UPDATED =====
+    command: python -m moderation_service.workers.moderation_worker
+    # ===== INSTEAD OF =====
+    # command: python -m app.workers.moderation_worker
     environment:
       - RABBITMQ_HOST=rabbitmq
     env_file:
@@ -63,7 +69,10 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./app/infrastructure/model/WAHA_KUN_AraBERT:/app/app/infrastructure/model/WAHA_KUN_AraBERT:ro
+      # ===== UPDATED =====
+      - ./moderation_service/infrastructure/model/WAHA_KUN_AraBERT:/app/moderation_service/infrastructure/model/WAHA_KUN_AraBERT:ro
+      # ===== INSTEAD OF =====
+      # - ./app/infrastructure/model/WAHA_KUN_AraBERT:/app/app/infrastructure/model/WAHA_KUN_AraBERT:ro
     restart: unless-stopped
     networks:
       - moderation-network

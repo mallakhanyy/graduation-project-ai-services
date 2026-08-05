@@ -5,9 +5,10 @@ import time
 import pika
 from typing import Optional
 
-from app.core.config import settings
-from app.core.exceptions import RabbitMQConnectionError
-from app.core.logger import logger
+from moderation_service.core.config import settings
+from moderation_service.core.exceptions import RabbitMQConnectionError
+from moderation_service.core.logger import logger
+
 
 
 class RabbitMQProducer:

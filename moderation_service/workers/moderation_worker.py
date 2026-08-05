@@ -3,13 +3,13 @@
 import signal
 from typing import Any
 
-from app.core.logger import logger
-from app.infrastructure.model.arabert_model import AraBERTModel  # ← النموذج الحقيقي
-from app.infrastructure.rabbitmq.consumer import RabbitMQConsumer
-from app.infrastructure.rabbitmq.result_producer import ResultProducer
-from app.services.moderation_service import ModerationService
-from app.domain.entities import Comment
-from app.domain.value_objects import CommentId, CommentText
+from moderation_service.core.logger import logger
+from moderation_service.infrastructure.model.arabert_model import AraBERTModel
+from moderation_service.infrastructure.rabbitmq.consumer import RabbitMQConsumer
+from moderation_service.infrastructure.rabbitmq.result_producer import ResultProducer
+from moderation_service.services.moderation_service import ModerationService
+from moderation_service.domain.entities import Comment
+from moderation_service.domain.value_objects import CommentId, CommentText
 
 
 class ModerationWorker:
