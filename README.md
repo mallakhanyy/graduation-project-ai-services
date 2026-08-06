@@ -49,7 +49,7 @@ A production-ready microservice for moderating Arabic comments using a fine-tune
 
 ## 📁 **Project Structure**
 moderation-service/
-├── app/
+├── moderation_service/ # Main application package
 │ ├── api/v1/ # API routes
 │ │ ├── dependencies.py # Dependency injection
 │ │ └── routes.py # Endpoints
@@ -116,7 +116,7 @@ cp .env.example .env
 Place your fine-tuned AraBERT model in:
 
 text
-app/infrastructure/model/WAHA_KUN_AraBERT/
+moderation_service/infrastructure/model/WAHA_KUN_AraBERT/
 Required files:
 
 config.json
@@ -148,12 +148,12 @@ Terminal 2: Start the Worker
 bash
 cd /path/to/moderation-service
 venv\Scripts\activate
-python -m app.workers.moderation_worker
+python -m moderation_service.workers.moderation_worker
 Terminal 3: Start the API Server
 bash
 cd /path/to/moderation-service
 venv\Scripts\activate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn moderation_service.main:app --reload --host 0.0.0.0 --port 8000
 Expected Output:
 
 text
@@ -253,7 +253,7 @@ text
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        4. WORKER PROCESSES                                │
-│                    python -m app.workers.moderation_worker               │
+│                    python -m moderation_service.workers.moderation_worker │
 │                    🔄 Pops message from queue                             │
 │                    🤖 Runs ML model (1-2 seconds)                        │
 │                    📤 Pushes result to results_queue                     │
@@ -341,7 +341,7 @@ Variable	Description	Default
 DEBUG	Enable debug mode	false
 HOST	API host	0.0.0.0
 PORT	API port	8000
-MODEL_PATH	Path to model files	app/infrastructure/model/WAHA_KUN_AraBERT
+MODEL_PATH	Path to model files	moderation_service/infrastructure/model/WAHA_KUN_AraBERT
 MAX_SEQUENCE_LENGTH	Max tokens for model	128
 DEVICE	CPU or CUDA	cpu
 CONFIDENCE_THRESHOLD	Minimum confidence to flag	0.7
@@ -364,7 +364,7 @@ Check Queues
 bash
 docker exec rabbitmq rabbitmqctl list_queues name messages_ready consumers
 Check Queue Status
-python
+bash
 docker exec rabbitmq rabbitmqctl list_queues
 Expected Output:
 
@@ -396,7 +396,7 @@ curl -X POST http://localhost:8000/api/v1/moderate \
 
 # Test 4: Irrelevant
 curl -X POST http://localhost:8000/api/v1/moderate \
-  -H "Content-Type: application/json" \
+  -H "Content-Type": "application/json" \
   -d '{"comment_id": "test_4", "text": "الجو جميل اليوم"}'
 📝 License
 This project is licensed under the MIT License.
@@ -415,7 +415,20 @@ RabbitMQ - Message broker
 
 Hugging Face Transformers - ML library
 
+Happy Moderation! 🚀
 
-# Push to GitHub
-git push origin main
-Your README is ready! 🚀
+text
+
+---
+
+## 📋 **Key Changes Made**
+
+| Section | Before | After |
+|---------|--------|-------|
+| **Project Structure** | `app/` | `moderation_service/` |
+| **Worker Command** | `python -m app.workers.moderation_worker` | `python -m moderation_service.workers.moderation_worker` |
+| **API Command** | `uvicorn app.main:app` | `uvicorn moderation_service.main:app` |
+| **Model Path** | `app/infrastructure/model/` | `moderation_service/infrastructure/model/` |
+| **All Imports** | `from app.xxx` | `from moderation_service.xxx` |
+
+---
