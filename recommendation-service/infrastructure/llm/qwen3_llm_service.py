@@ -1,0 +1,47 @@
+import httpx
+
+from core.interfaces.llm_service import LLMService
+from shared.config import get_settings
+
+
+class Qwen3LLMService(LLMService):
+
+    def __init__(self):
+        self.settings = get_settings()
+
+    async def generate(self, prompt: str) -> str:
+
+        payload = {
+            "model": self.settings.LLM_MODEL_NAME,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            "stream": False,
+            "think": False,
+            "options": {
+                "temperature": self.settings.LLM_TEMPERATURE,
+                "num_predict": self.settings.LLM_MAX_TOKENS,
+            },
+        }
+
+        timeout = httpx.Timeout(
+            connect=10.0,
+            read=self.settings.LLM_TIMEOUT,
+            write=10.0,
+            pool=10.0,
+        )
+
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                f"{self.settings.LLM_BASE_URL}/api/chat",
+                json=payload,
+            )
+
+            response.raise_for_status()
+
+            data = response.json()
+
+        return data["message"]["content"]
