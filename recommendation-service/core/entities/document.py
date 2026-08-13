@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any
+
 
 @dataclass
 class Document:
-    document_id : str
-    title : str
-    source : str
-    language : Optional[str] = None
+    document_id: str
+    file_name: str
+    file_type: str
+    metadata: dict[str, Any]

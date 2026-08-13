@@ -1,23 +1,13 @@
 from dataclasses import dataclass
-from enum import Enum
 
-class Priority(Enum):
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
+from core.enums.category import Category
+from core.enums.priority import Priority
 
-class Category(Enum):
-    IRRIGATION = "irrigation"
-    DRAINAGE = "drainage"
-    WATER_QUALITY = "water_quality"
-    MAINTENANCE = "maintenance"
-    RAINWATER_HARVESTING = "rainwater_harvesting"
-    SOIL = "soil"
-    WATER_MANAGEMENT = "water_management"
 
-@dataclass(frozen=True)
+@dataclass
 class RecommendationItem:
-    recommendation : str
-    reasoning : str
+    recommendation: str
+    reasoning: str
     priority: Priority
     category: Category
+    confidence: float
