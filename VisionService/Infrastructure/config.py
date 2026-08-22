@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # ============================================
     # Model Settings
     # ============================================
-    MODEL_PATH: str = "models/efficientnet_waha_kun.keras"
+    MODEL_PATH: str = "../models/efficientnet_waha_kun.keras"
     CONFIDENCE_THRESHOLD: float = 50.0
     
     # ============================================
