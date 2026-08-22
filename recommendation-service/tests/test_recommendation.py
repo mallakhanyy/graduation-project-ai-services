@@ -53,6 +53,7 @@ async def main():
 
     # 10. Run full pipeline
     response = await recommendation_service.recommend(
+        request_id="test-123",
         query=query,
         top_k=3,
     )

@@ -29,7 +29,22 @@ class QdrantVectorStore(VectorStore):
 
         self.vector_size = embedding_service.dimension
 
-        self._ensure_collection()
+    async def initialize(self) -> None:
+        collections = await self.client.get_collections()
+
+        exists = any(
+            collection.name == self.collection_name
+            for collection in collections.collections
+        )
+
+        if not exists:
+            await self.client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=VectorParams(
+                    size=self.vector_size,
+                    distance=self.distance,
+                ),
+            )
 
     def _get_distance(
         self,
@@ -38,33 +53,14 @@ class QdrantVectorStore(VectorStore):
 
         if distance == VectorDistance.COSINE:
             return Distance.COSINE
-
         if distance == VectorDistance.DOT:
             return Distance.DOT
-
         if distance == VectorDistance.EUCLID:
             return Distance.EUCLID
 
         raise ValueError(
             f"Unsupported Qdrant distance: {distance}"
         )
-
-    def _ensure_collection(self) -> None:
-        collections = self.client.get_collections()
-
-        exists = any(
-            collection.name == self.collection_name
-            for collection in collections.collections
-        )
-
-        if not exists:
-            self.client.create_collection(
-                collection_name=self.collection_name,
-                vectors_config=VectorParams(
-                    size=self.vector_size,
-                    distance=self.distance,
-                ),
-            )
 
     async def add(
         self,
@@ -92,7 +88,7 @@ class QdrantVectorStore(VectorStore):
         ]
 
         if points:
-            self.client.upsert(
+            await self.client.upsert(
                 collection_name=self.collection_name,
                 points=points,
             )
@@ -103,7 +99,7 @@ class QdrantVectorStore(VectorStore):
         top_k: int,
     ) -> list[RetrievedChunk]:
 
-        results = self.client.query_points(
+        results = await self.client.query_points(
             collection_name=self.collection_name,
             query=embedding,
             limit=top_k,

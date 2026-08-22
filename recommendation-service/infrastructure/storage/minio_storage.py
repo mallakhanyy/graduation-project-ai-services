@@ -29,3 +29,15 @@ class MinIOStorage(FileStorage):
         finally:
             response.close()
             response.release_conn()
+
+    def list_objects(self) -> list[str]:
+        objects = self.client.list_objects(
+            self.bucket_name,
+            recursive=True,
+        )
+
+        return [
+            obj.object_name
+            for obj in objects
+            if obj.object_name is not None
+        ]
