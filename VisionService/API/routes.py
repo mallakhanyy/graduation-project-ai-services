@@ -1,5 +1,5 @@
 """
-API Routes for Vision Service - with enhanced recommendation and severity.
+API Routes for Vision Service - with refusal logic for "no problem" images.
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
@@ -169,46 +169,52 @@ async def predict(
         
         english_class = result['problem_code']
         confidence = result['confidence']
+        problem = result['problem_arabic']
+        severity = result['severity']
+        recommendation = result['recommendation']
+        explanation = result['explanation']
+        repair_steps = result['repair_steps']
         
         logger.info(f"[{request_id}] Prediction: {english_class} ({confidence:.2f}%)")
         
-        # 7. Check confidence
-        if confidence < settings.CONFIDENCE_THRESHOLD:
+        # ============================================
+        # REFUSE "NO PROBLEM" IMAGES
+        # ============================================
+        
+        # 1. If confidence is very low (< 50%), refuse with clear message
+        if confidence < 50.0:
             return {
-                "status": "low_confidence",
-                "message": f"الثقة منخفضة ({confidence:.2f}%). يرجى رفع صورة أوضح",
+                "status": "refused",
+                "message": "لم يتم الكشف عن مشكلة واضحة في الصورة.",
                 "confidence": f"{confidence:.2f}%",
-                "suggestion": "حاول التقاط الصورة من زاوية أفضل أو في إضاءة أفضل",
+                "suggestion": "يرجى رفع صورة توضح مكان المشكلة بشكل أفضل.",
                 "timestamp": datetime.now().isoformat()
             }
         
-        # 8. Get context
-        context = {
-            'weather': 'clear',
-            'location': 'field',
-            'crop_stage': 'normal',
-            'water_availability': 'normal',
-            'user_expertise': 'medium'
-        }
+        # 2. If confidence is low to medium (50-65%), return "uncertain"
+        if confidence < 65.0:
+            return {
+                "status": "uncertain",
+                "message": "الصورة غير واضحة أو لا تظهر مشكلة محددة بوضوح.",
+                "confidence": f"{confidence:.2f}%",
+                "suggestion": "يرجى رفع صورة أوضح أو التأكد من وجود مشكلة.",
+                "timestamp": datetime.now().isoformat()
+            }
         
-        # 9. Get recommendation
-        recommendation = get_knowledge_recommendation(english_class, confidence, context)
+        # ============================================
+        # 3. Confidence is high (>= 65%), return diagnosis with ALL fields
+        # ============================================
         
-        # 10. Calculate severity
-        severity_result = calculate_severity_enhanced(english_class, confidence, context)
-        
-        # 11. Return combined result
+        # Return combined result with ALL required fields
         return {
             "status": "success",
-            "problem": recommendation.get("arabic", english_class),
-            "severity": {
-                "level": severity_result["level"],
-                "urgency": severity_result["urgency"],
-                "recommended_action": severity_result["recommended_action"]
-            },
-            "recommendation": recommendation.get("recommendation", ""),
-            "explanation": recommendation.get("explanation", "").strip(),
-            "repair_steps": recommendation.get("steps", []),
+            "problem": problem,  # ✅ Prediction problem (Arabic)
+            "problem_code": english_class,  # ✅ Prediction problem (English code)
+            "confidence": f"{confidence:.2f}%",  # ✅ Confidence
+            "severity": severity,  # ✅ Severity
+            "recommendation": recommendation,  # ✅ Recommendation
+            "explanation": explanation,  # ✅ Explanation
+            "repair_steps": repair_steps,  # ✅ Repair steps
             "timestamp": datetime.now().isoformat()
         }
     
@@ -246,9 +252,11 @@ async def predict_async(
     request_id = str(uuid.uuid4())[:8]
     
     try:
+        # 1. Validate file
         validated = validate_file(file, settings)
         logger.info(f"[{request_id}] Received file (async): {validated['filename']}")
         
+        # 2. Check file size
         contents = await file.read()
         if len(contents) == 0:
             raise HTTPException(status_code=400, detail="File is empty")
@@ -260,6 +268,7 @@ async def predict_async(
             )
         await file.seek(0)
         
+        # 3. Save temporarily
         safe_filename = f"{request_id}_{file.filename}"
         file_path = os.path.join(settings.UPLOAD_FOLDER, safe_filename)
         
@@ -268,6 +277,7 @@ async def predict_async(
         
         logger.info(f"[{request_id}] Saved file: {file_path}")
         
+        # 4. Publish to queue
         broker = RabbitMQBroker()
         broker.publish_request(request_id, file_path)
         broker.close()

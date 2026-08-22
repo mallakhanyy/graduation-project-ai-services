@@ -90,6 +90,9 @@ def predict_image(image_path: str) -> Dict[str, Any]:
         # Calculate severity
         severity = calculate_severity(problem_code, confidence)
         
+        # ============================================
+        # Return ALL required fields
+        # ============================================
         return {
             "problem_code": problem_code,
             "problem_arabic": info.get("arabic", problem_code),
