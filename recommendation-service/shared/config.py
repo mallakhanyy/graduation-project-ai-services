@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     QDRANT_DISTANCE: VectorDistance = VectorDistance.COSINE
 
     RETRIEVAL_TOP_K: int = 5
+    RETRIEVAL_SCORE_THRESHOLD: float = 0.60
+    MAX_RECOMMENDATIONS: int = 3
 
     LLM_BASE_URL: str
     LLM_MODEL_NAME: str

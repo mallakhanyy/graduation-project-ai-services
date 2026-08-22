@@ -1,4 +1,4 @@
-from qdrant_client import QdrantClient as QdrantSDKClient
+from qdrant_client import AsyncQdrantClient
 
 from shared.config import get_settings
 
@@ -8,13 +8,13 @@ class QdrantClient:
     def __init__(self):
         settings = get_settings()
 
-        self.client = QdrantSDKClient(
+        self.client = AsyncQdrantClient(
             url=settings.QDRANT_URL,
             timeout=60.0,
         )
 
-    def get_client(self) -> QdrantSDKClient:
+    def get_client(self) -> AsyncQdrantClient:
         return self.client
 
-    def close(self) -> None:
-        self.client.close()
+    async def close(self) -> None:
+        await self.client.close()

@@ -15,13 +15,22 @@ class ContextBuilderService:
 
         for index, chunk in enumerate(chunks, start=1):
 
+            document_id = chunk.metadata.get(
+                "document_id",
+                "unknown",
+            )
+
+            page_number = chunk.metadata.get(
+                "page_number",
+                "unknown",
+            )
+
             context_parts.append(
                 f"""[Context {index}]
-                Chunk ID: {chunk.chunk_id}
-                Score: {chunk.score}
-                Metadata: {chunk.metadata}
-                Text:
-                {chunk.text}
+                    Source: {document_id}
+                    Page: {page_number}
+                    Text:
+                    {chunk.text}
                 """
             )
 

@@ -29,7 +29,10 @@ class Chunker(ChunkerInterface):
                     DocumentChunk(
                         chunk_id=f"{document_id}_{chunk_order}",
                         text=text,
-                        metadata=page.metadata,
+                        metadata={
+                            **page.metadata,
+                            "document_id": document_id,
+                        },
                         chunk_order=chunk_order,
                     )
                 )

@@ -1,6 +1,9 @@
+import json
+
 import httpx
 
 from core.interfaces.llm_service import LLMService
+from core.schemas.llm_recommendation_response import LLMRecommendationResponse
 from shared.config import get_settings
 
 
@@ -9,7 +12,10 @@ class Qwen3LLMService(LLMService):
     def __init__(self):
         self.settings = get_settings()
 
-    async def generate(self, prompt: str) -> str:
+    async def generate(
+        self,
+        prompt: str,
+    ) -> LLMRecommendationResponse:
 
         payload = {
             "model": self.settings.LLM_MODEL_NAME,
@@ -44,4 +50,17 @@ class Qwen3LLMService(LLMService):
 
             data = response.json()
 
-        return data["message"]["content"]
+        content = data["message"]["content"]
+
+        print("\n===== RAW LLM CONTENT =====")
+        print(repr(content))
+        print("============================\n")
+
+        try:
+            parsed_content = json.loads(content)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                "LLM returned invalid JSON"
+            ) from exc
+
+        return LLMRecommendationResponse.model_validate(parsed_content)

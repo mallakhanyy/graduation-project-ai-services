@@ -1,31 +1,36 @@
+import pytest
+
 from application.services.context_builder_service import ContextBuilderService
 from core.value_objects.retrieved_chunk import RetrievedChunk
 
 
-def main():
-
+def test_context_builder_includes_relevant_metadata():
     chunks = [
         RetrievedChunk(
             chunk_id="chunk-001",
             text="Drainage problems can cause water accumulation.",
-            metadata={"source": "test.pdf"},
+            metadata={
+                "document_id": "rainwater_manual.pdf",
+                "page_number": 7,
+            },
             score=0.83,
-        ),
-        RetrievedChunk(
-            chunk_id="chunk-002",
-            text="Rainwater harvesting can reduce water waste.",
-            metadata={"source": "test.pdf"},
-            score=0.67,
-        ),
+        )
     ]
 
     service = ContextBuilderService()
 
     context = service.build(chunks)
 
-    print("\nGenerated Context:\n")
-    print(context)
+    assert "rainwater_manual.pdf" in context
+    assert "Page: 7" in context
+    assert "Drainage problems can cause water accumulation." in context
+
+    # Internal retrieval details should not be sent to the LLM
+    assert "chunk-001" not in context
+    assert "0.83" not in context
 
 
-if __name__ == "__main__":
-    main()
+def test_context_builder_returns_empty_for_no_chunks():
+    service = ContextBuilderService()
+
+    assert service.build([]) == ""

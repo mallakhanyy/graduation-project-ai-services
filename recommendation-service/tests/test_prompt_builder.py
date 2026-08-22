@@ -1,9 +1,7 @@
-from application.services.prompt_builder_service import (
-    PromptBuilderService,
-)
+from application.services.prompt_builder_service import PromptBuilderService
 
 
-def main():
+def test_prompt_builder_contains_required_information():
 
     service = PromptBuilderService()
 
@@ -12,25 +10,44 @@ def main():
     context = """
 [Context 1]
 Source: test.pdf
-Score: 0.83
+Page: 1
 Text:
 Drainage problems can cause water accumulation.
-
-[Context 2]
-Source: test.pdf
-Score: 0.67
-Text:
-Rainwater harvesting can reduce water waste.
 """
 
     prompt = service.build(
         query=query,
         context=context,
+        max_recommendations=3,
     )
 
-    print("\nGenerated Prompt:\n")
-    print(prompt)
+    assert query in prompt
+
+    assert "[Context 1]" in prompt
+    assert "Source: test.pdf" in prompt
+    assert "Page: 1" in prompt
+    assert "Drainage problems can cause water accumulation." in prompt
+
+    assert "ONLY valid JSON" in prompt
+    assert "recommendation" in prompt
+    assert "reasoning" in prompt
+    assert "priority" in prompt
+    assert "category" in prompt
+    assert "confidence" in prompt
+
+    assert "irrigation" in prompt
+    assert "drainage" in prompt
+    assert "water_quality" in prompt
 
 
-if __name__ == "__main__":
-    main()
+def test_prompt_builder_respects_max_recommendations():
+
+    service = PromptBuilderService()
+
+    prompt = service.build(
+        query="مشكلة في المياه",
+        context="Some relevant agricultural context.",
+        max_recommendations=2,
+    )
+
+    assert "at most 2" in prompt
