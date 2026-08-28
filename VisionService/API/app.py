@@ -7,13 +7,9 @@ import sys
 import os
 
 # Add project root to Python path
-<<<<<<< HEAD
-# المجلد الرئيسي هو VisionService/VisionService
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-=======
+
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
->>>>>>> 81e2a3df562373adc74d0143b0d0ab3a86fc59ce
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
