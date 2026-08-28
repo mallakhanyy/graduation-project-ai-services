@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # ============================================
     # Model Settings
     # ============================================
+
     # ============================================
 # Model Settings
 # ============================================
@@ -30,7 +31,7 @@ class Settings(BaseSettings):
     BINARY_MODEL_PATH: str = "models/binary_classifier.keras"  # ← جديد
     CONFIDENCE_THRESHOLD: float = 75.0
     BINARY_THRESHOLD: float = 0.75  # ← جديد
-    # ============================================
+
     # File Settings
     # ============================================
     UPLOAD_FOLDER: str = "uploads"
