@@ -350,3 +350,4 @@
 2026-08-28 12:24:34,910 - VisionService.API - INFO - D:\Graduation_Project\VisionService\VisionService\API\routes.py:183 - [a41c8e5c] Binary check: is_problem=False, confidence=0.54
 2026-08-28 12:24:34,911 - VisionService.API - INFO - D:\Graduation_Project\VisionService\VisionService\API\routes.py:287 - [a41c8e5c] Cleaned up temporary file
 2026-08-28 12:24:40,383 - VisionService.API - INFO - D:\Graduation_Project\VisionService\VisionService\API\routes.py:312 - [3c29d634] Received file (async): OIP (7).webp
+2026-08-28 12:24:40,386 - VisionService.API - INFO - D:\Graduation_Project\VisionService\VisionService\API\routes.py:331 - [3c29d634] Saved file: uploads\3c29d634_OIP (7).webp

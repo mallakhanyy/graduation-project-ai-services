@@ -140,3 +140,4 @@
 2026-08-28 12:24:41,411 - VisionService.Worker - INFO - D:\Graduation_Project\VisionService\VisionService\Worker\worker.py:73 - [3c29d634] Binary check: is_problem=False, confidence=0.54
 2026-08-28 12:24:41,412 - VisionService.Worker - INFO - D:\Graduation_Project\VisionService\VisionService\Worker\worker.py:86 - [3c29d634] Refused: Not an irrigation problem
 2026-08-28 12:24:41,445 - VisionService.Worker - INFO - D:\Graduation_Project\VisionService\VisionService\Worker\worker.py:102 - [3c29d634] Cleaned up enhanced image
+2026-08-28 12:24:41,446 - VisionService.Worker - INFO - D:\Graduation_Project\VisionService\VisionService\Worker\worker.py:108 - [3c29d634] Completed successfully (total: 1.01s)
