@@ -8,7 +8,7 @@ import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from VisionService.Infrastructure.config import get_settings
+from Infrastructure.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
