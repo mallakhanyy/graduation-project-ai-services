@@ -12,7 +12,7 @@ client = Minio(
 
 url = client.presigned_get_object(
     "asr-audio",
-    "9_256_cropped.flac",
+    "AUDIO_FILE = '/home/mallakhanyy/Projects/ai-services/dataset/audio_files/9_28_cropped.flac'",
     expires=timedelta(minutes=60),
 )
 

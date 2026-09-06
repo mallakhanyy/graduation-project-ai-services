@@ -63,10 +63,9 @@ async def main():
         )
 
         requests_queue: aio_pika.abc.AbstractQueue = (
-            await channel.declare_queue(
+            await channel.get_queue(
                 settings.rabbitmq.requests_queue,
-                durable=True,
-                auto_delete=False,
+                ensure=False
             )
         )
 
@@ -113,3 +112,4 @@ if __name__ == "__main__":
         logger.info(
             "ASR Service stopped."
         )
+
