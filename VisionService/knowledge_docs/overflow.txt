@@ -1,0 +1,24 @@
+Overflow Management Guide
+
+Causes of Overflow:
+1. Excessive water pressure
+2. Blocked drainage channels
+3. Malfunctioning valves
+4. Heavy rainfall
+
+Immediate Actions:
+- Reduce water flow
+- Open emergency outlets
+- Check for blockages
+
+Prevention:
+- Install water level sensors
+- Regular channel cleaning
+- Pressure regulation
+- Emergency overflow design
+
+Best Practices:
+- Design channels with 20% extra capacity
+- Install warning systems
+- Regular maintenance schedule
+- Train staff on emergency procedures
