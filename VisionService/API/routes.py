@@ -1,5 +1,11 @@
 """
 API Routes for Vision Service - with enhanced recommendation and severity.
+
+NOTE: The asynchronous HTTP endpoint (/api/v1/predict-async) has been REMOVED.
+The Backend now publishes requests directly to RabbitMQ.
+
+Architecture:
+    Backend → RabbitMQ (vision.analysis.request) → Worker → RabbitMQ (vision.analysis.result) → Backend
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
@@ -78,7 +84,6 @@ async def root():
         "description": "Computer Vision for irrigation problem diagnosis",
         "endpoints": {
             "/api/v1/predict": "POST - Synchronous prediction (1-3s)",
-            "/api/v1/predict-async": "POST - Asynchronous prediction (RabbitMQ)",
             "/health": "GET - Service health check",
             "/docs": "GET - API documentation"
         },
@@ -86,9 +91,10 @@ async def root():
             "host": settings.RABBITMQ_HOST,
             "port": settings.RABBITMQ_PORT,
             "queues": {
-                "requests": "vision.prediction.requests",
-                "results": "vision.prediction.results"
-            }
+                "requests": settings.REQUESTS_QUEUE,
+                "results": settings.RESULTS_QUEUE
+            },
+            "note": "Async processing is handled by the Worker via RabbitMQ"
         },
         "timestamp": datetime.now().isoformat()
     }
@@ -130,6 +136,7 @@ async def predict(
         await file.seek(0)
         
         # 3. Save temporarily
+        os.makedirs(settings.UPLOAD_FOLDER, exist_ok=True)   # ✅ أضفت السطر ده
         safe_filename = f"{request_id}_{file.filename}"
         file_path = os.path.join(settings.UPLOAD_FOLDER, safe_filename)
         
@@ -171,10 +178,9 @@ async def predict(
         logger.info(f"[{request_id}] Prediction: {english_class} ({confidence:.2f}%)")
         
         # ============================================
-        # 7. BINARY CLASSIFICATION CHECK (NEW!)
+        # 7. BINARY CLASSIFICATION CHECK
         # ============================================
         
-        # Check if image is actually an irrigation problem
         is_problem, binary_confidence = is_irrigation_problem(
             image_to_predict, 
             threshold=settings.BINARY_THRESHOLD
@@ -183,10 +189,9 @@ async def predict(
         logger.info(f"[{request_id}] Binary check: is_problem={is_problem}, confidence={binary_confidence:.2f}")
         
         # ============================================
-        # 8. REFUSE NON-IRRIGATION IMAGES (NEW!)
+        # 8. REFUSE NON-IRRIGATION IMAGES
         # ============================================
         
-        # If binary classifier says it's NOT a problem → refuse
         if not is_problem:
             return {
                 "status": "refused",
@@ -210,10 +215,9 @@ async def predict(
             }
         
         # ============================================
-        # 10. UNCERTAIN CHECK (optional)
+        # 10. UNCERTAIN CHECK
         # ============================================
         
-        # If problem is Blockage with medium confidence → uncertain
         if english_class == "Blockage" and confidence < 85.0:
             return {
                 "status": "uncertain",
@@ -245,7 +249,6 @@ async def predict(
         # 11. SUCCESS → GET RECOMMENDATION
         # ============================================
         
-        # Get context
         context = {
             'weather': 'clear',
             'location': 'field',
@@ -254,13 +257,13 @@ async def predict(
             'user_expertise': 'medium'
         }
         
-        # Get recommendation
         recommendation = get_knowledge_recommendation(english_class, confidence, context)
         
-        # Calculate severity
         severity_result = calculate_severity_enhanced(english_class, confidence, context)
         
+        # ============================================
         # 12. Return combined result
+        # ============================================
         return {
             "status": "success",
             "problem": recommendation.get("arabic", english_class),
@@ -271,8 +274,6 @@ async def predict(
             "repair_steps": recommendation.get("steps", []),
             "timestamp": datetime.now().isoformat()
         }
-
-        # 12. Return combined result
     
     except HTTPException:
         raise
@@ -287,68 +288,3 @@ async def predict(
                 logger.info(f"[{request_id}] Cleaned up temporary file")
             except Exception as e:
                 logger.warning(f"[{request_id}] Failed to delete file: {e}")
-
-
-# ============================================
-# ASYNCHRONOUS PREDICTION ENDPOINT
-# ============================================
-@router.post("/api/v1/predict-async", tags=["prediction"])
-async def predict_async(
-    file: UploadFile = File(...),
-    settings: Settings = Depends(get_settings)
-) -> Dict[str, Any]:
-    """
-    Submit an image for asynchronous processing.
-    
-    - **file**: Image file (JPG, PNG, WEBP, BMP) - max 10MB
-    - **Returns**: request_id immediately
-    - **Result**: Delivered via RabbitMQ queue 'vision.prediction.results'
-    """
-    file_path = None
-    request_id = str(uuid.uuid4())[:8]
-    
-    try:
-        validated = validate_file(file, settings)
-        logger.info(f"[{request_id}] Received file (async): {validated['filename']}")
-        
-        contents = await file.read()
-        if len(contents) == 0:
-            raise HTTPException(status_code=400, detail="File is empty")
-        
-        if len(contents) > settings.MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=f"File too large. Max size: {settings.MAX_FILE_SIZE // (1024*1024)} MB"
-            )
-        await file.seek(0)
-        
-        safe_filename = f"{request_id}_{file.filename}"
-        file_path = os.path.join(settings.UPLOAD_FOLDER, safe_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        logger.info(f"[{request_id}] Saved file: {file_path}")
-        
-        broker = RabbitMQBroker()
-        broker.publish_request(request_id, file_path)
-        broker.close()
-        
-        return {
-            "status": "accepted",
-            "request_id": request_id,
-            "message": "Request accepted for processing. Result will be delivered asynchronously via RabbitMQ.",
-            "queue": "vision.prediction.results",
-            "timestamp": datetime.now().isoformat()
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"[{request_id}] Error: {e}")
-        if file_path and os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except:
-                pass
-        raise HTTPException(status_code=500, detail=str(e))

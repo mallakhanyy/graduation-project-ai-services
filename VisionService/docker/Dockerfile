@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for better caching)
+# Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -31,4 +31,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8001
 
 # Start both API and Worker
-CMD ["sh", "-c", "uvicorn VisionService.API.app:app --host 0.0.0.0 --port 8001 & python -m VisionService.Worker.worker"]
+CMD ["sh", "-c", "uvicorn API.app:app --host 0.0.0.0 --port 8001 & python -m Worker.worker"]

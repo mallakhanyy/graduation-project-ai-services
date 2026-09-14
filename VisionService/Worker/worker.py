@@ -6,6 +6,8 @@ import json
 import logging
 import time
 import os
+import uuid          # ✅ أضفت السطر ده
+import requests      # ✅ أضفت السطر ده
 from datetime import datetime
 
 from Infrastructure.queue_broker import RabbitMQBroker
@@ -19,6 +21,49 @@ from Core.binary_model import is_irrigation_problem  # ✅ أضف السطر د�
 logger = setup_logger("VisionService.Worker")
 settings = get_settings()
 
+
+# ============================================
+# ✅ NEW: دالة تحميل الصورة من URL
+# ============================================
+def download_image(image_url: str, extension: str = "jpg") -> str:
+    """
+    Download an image from a URL and save it temporarily.
+
+    Args:
+        image_url: URL of the image
+        extension: File extension (default: jpg)
+
+    Returns:
+        Path to the downloaded image
+    """
+    try:
+        logger.info(f"⬇️ Downloading image from: {image_url}")
+
+        response = requests.get(
+            image_url,
+            timeout=settings.IMAGE_DOWNLOAD_TIMEOUT,
+            stream=True
+        )
+        response.raise_for_status()
+
+        # Ensure extension starts with a dot
+        if not extension.startswith("."):
+            extension = "." + extension
+
+        temp_path = f"temp_{uuid.uuid4().hex[:8]}{extension}"
+
+        with open(temp_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        logger.info(f"✅ Image downloaded: {temp_path}")
+        return temp_path
+
+    except Exception as e:
+        logger.error(f"❌ Failed to download image: {e}")
+        raise
+
+
 def process_prediction(ch, method, properties, body):
     """
     Process a prediction request from the queue.
@@ -31,20 +76,21 @@ def process_prediction(ch, method, properties, body):
     """
     broker = None
     start_time = time.time()
+    request_id = "unknown"       # ✅ أضفت السطر ده
+    image_path = None            # ✅ أضفت السطر ده
     
     try:
         # Parse message
         message = json.loads(body)
         request_id = message['request_id']
-        image_path = message['image_path']
+        image_url = message['image_url']              # ✅ عدلت: بدل image_path
+        extension = message.get('extension', 'jpg')   # ✅ أضفت السطر ده
         
         logger.info(f"[{request_id}] Processing started")
+        logger.info(f"[{request_id}] Image URL: {image_url}")   # ✅ أضفت السطر ده
         
-        # Check if image exists
-        if not os.path.exists(image_path):
-            logger.error(f"[{request_id}] Image not found: {image_path}")
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return
+        # ✅ عدلت: بدل ما يتحقق إن الملف موجود، بيحمله من الـ URL
+        image_path = download_image(image_url, extension)
         
         # Optional: Quality check
         if settings.QUALITY_CHECK_ENABLED:
@@ -83,6 +129,7 @@ def process_prediction(ch, method, properties, body):
                 "explanation": "لم يتم الكشف عن مشكلة في الري.",
                 "repair_steps": []
             }
+            prediction_time = time.time() - start_time     # ✅ أضفت السطر ده
             logger.info(f"[{request_id}] Refused: Not an irrigation problem")
         else:
             # Run prediction
@@ -121,6 +168,14 @@ def process_prediction(ch, method, properties, body):
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
     
     finally:
+        # ✅ أضفت: تنظيف الصورة المحملة
+        if image_path and os.path.exists(image_path):
+            try:
+                os.remove(image_path)
+                logger.info(f"[{request_id}] Cleaned up downloaded image")
+            except Exception as cleanup_error:
+                logger.warning(f"[{request_id}] Cleanup failed: {cleanup_error}")
+        
         if broker:
             broker.close()
 

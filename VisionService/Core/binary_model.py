@@ -32,12 +32,12 @@ class BinaryClassifier:
         try:
             if os.path.exists(model_path):
                 self.model = tf.keras.models.load_model(model_path)
-                logger.info(f"✅ Binary classifier loaded from: {model_path}")
+                logger.info(f" Binary classifier loaded from: {model_path}")
             else:
-                logger.warning("⚠️ Binary classifier not found. Using fallback method.")
+                logger.warning(" Binary classifier not found. Using fallback method.")
                 self.model = None
         except Exception as e:
-            logger.error(f"❌ Failed to load binary classifier: {e}")
+            logger.error(f" Failed to load binary classifier: {e}")
             self.model = None
     
     def predict(self, image_path: str) -> Tuple[bool, float]:

@@ -36,3 +36,6 @@ typing_extensions==4.16.0
 
 
 protobuf==6.31.1
+
+# ✅ NEW: HTTP Client (for downloading images)
+requests==2.34.2
