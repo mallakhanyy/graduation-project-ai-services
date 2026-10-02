@@ -32,7 +32,8 @@ app = FastAPI(
     version=SERVICE_VERSION,
     description="Computer Vision service for irrigation problem diagnosis",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    root_path="/vision"
 )
 
 # Setup middleware
