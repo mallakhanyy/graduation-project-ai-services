@@ -19,7 +19,7 @@ venv/
 # Environment Variables
 # ==========================
 
-# .env
+.env
 
 # ==========================
 # Temporary Files
