@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package vision.v1;
+
+option csharp_namespace = "WahaKun.Vision.V1";
+option java_package = "com.wahakun.vision.v1";
+option java_multiple_files = true;
+
+service VisionService {
+  rpc Predict(PredictRequest) returns (PredictResponse);
+  rpc HealthCheck(HealthRequest) returns (HealthResponse);
+}
+
+message PredictRequest {
+  string request_id = 1;
+  oneof source {
+    bytes image_data = 2;
+    string image_url = 3;
+  }
+  string filename = 4;
+}
+
+message HealthRequest {}
+
+message PredictResponse {
+  string status = 1;
+  string problem = 2;
+  string confidence = 3;
+  string severity = 4;
+  string recommendation = 5;
+  string explanation = 6;
+  repeated string repair_steps = 7;
+  string timestamp = 8;
+}
+
+message HealthResponse {
+  string status = 1;
+  string service = 2;
+  string version = 3;
+  bool model_loaded = 4;
+  bool binary_classifier_loaded = 5;
+  string timestamp = 6;
+}

@@ -1,0 +1,1 @@
+"""gRPC package for the Vision Service."""
