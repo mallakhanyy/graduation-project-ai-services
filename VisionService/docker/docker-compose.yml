@@ -16,15 +16,16 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     networks:
       - vision-network
 
   # ============================================
-  # Vision Service (API + Worker)
+  # Vision Service  (FastAPI + gRPC + Worker)
   # ============================================
   vision-service:
     build:
@@ -33,7 +34,8 @@ services:
     image: vision-service:latest
     container_name: vision-service
     ports:
-      - "8001:8001"
+      - "8001:8001"       # FastAPI (REST)
+      - "50051:50051"     # ✅ gRPC
     environment:
       # Service
       - SERVICE_NAME=vision-service
@@ -41,40 +43,54 @@ services:
       - HOST=0.0.0.0
       - PORT=8001
       - DEBUG=false
+      - LOG_LEVEL=INFO
+
+      # ✅ gRPC
+      - GRPC_HOST=0.0.0.0
+      - GRPC_PORT=50051
 
       # Model
-      - MODEL_PATH=./models/efficientnet_waha_kun.keras
-      - BINARY_MODEL_PATH=./models/binary_classifier.keras
+      - MODEL_PATH=/app/models/efficientnet_waha_kun.keras
+      - BINARY_MODEL_PATH=/app/models/binary_classifier.keras
       - CONFIDENCE_THRESHOLD=75.0
       - BINARY_THRESHOLD=0.75
 
       # Files
-      - UPLOAD_FOLDER=./uploads
+      - UPLOAD_FOLDER=/app/uploads
       - MAX_FILE_SIZE=10485760
 
       # Image Processing
       - QUALITY_CHECK_ENABLED=true
       - ENHANCE_IMAGE_ENABLED=true
 
+      # ✅ CORS (JSON list — required by pydantic-settings)
+      - ALLOWED_ORIGINS=["http://localhost:3000"]
+
       # RabbitMQ
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=guest
       - RABBITMQ_PASSWORD=guest
-
-      # ✅ NEW: Queue Names
       - REQUESTS_QUEUE=vision.analysis.request
       - RESULTS_QUEUE=vision.analysis.result
 
-      # ✅ NEW: Image Download Timeout
-      - IMAGE_DOWNLOAD_TIMEOUT=30
+      # Image Download Timeout
+      - IMAGE_DOWNLOAD_TIMEOUT=15
     volumes:
-      - ../models:/app/models
+      - ../models:/app/models:ro
       - ../uploads:/app/uploads
       - ../logs:/app/logs
     depends_on:
       rabbitmq:
         condition: service_healthy
+    healthcheck:
+      # Checks the HTTP side. The gRPC side is checked by the entrypoint
+      # script before it hands off to the container (see below).
+      test: ["CMD", "curl", "-fsS", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     restart: unless-stopped
     networks:
       - vision-network

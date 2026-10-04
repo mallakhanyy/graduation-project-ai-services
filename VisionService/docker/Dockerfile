@@ -1,34 +1,45 @@
+# syntax=docker/dockerfile:1.6
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
+# ---- System dependencies -------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        gcc \
+        curl \
+        tini \
+        libglib2.0-0 \
+        libgl1 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+        libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# ---- Python dependencies (cached layer) ---------------------------------
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project
+# ---- Application code ---------------------------------------------------
 COPY . .
 
-# Create necessary directories
+# ---- Runtime directories ------------------------------------------------
 RUN mkdir -p uploads logs models
 
-# Set Python path
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
+# ---- Entrypoint script must be executable -------------------------------
+RUN chmod +x /app/docker/entrypoint.sh
 
-# Expose port
-EXPOSE 8001
+# ---- Environment --------------------------------------------------------
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    TF_CPP_MIN_LOG_LEVEL=2
 
-# Start both API and Worker
-CMD ["sh", "-c", "uvicorn API.app:app --host 0.0.0.0 --port 8001 & python -m Worker.worker"]
+# ---- Ports --------------------------------------------------------------
+EXPOSE 8001 50051
+
+# ---- Entrypoint ---------------------------------------------------------
+# tini reaps zombies and forwards SIGTERM to the child processes.
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["sh", "/app/docker/entrypoint.sh"]
